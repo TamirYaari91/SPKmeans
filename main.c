@@ -311,11 +311,14 @@ void A_to_A_tag(double **A, double **V, int N) {
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
     j = arr_max[1];
+    printf("max_val is in index: (%d,%d)\n",i,j);
     theta = (A[j][j] - A[i][i]) / 2 * A[i][j];
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
     double **P = gen_P(s,c,i,j,N);
+    printf("P = \n");
+    print_mat(P,N,N);
     multi_mat(V,P,N);
     printf("V = \n");
     print_mat(V,N,N);
@@ -349,7 +352,7 @@ void A_to_A_tag(double **A, double **V, int N) {
 }
 
 int *max_indices_off_diag(double **A, int N) {
-    double res = 0;
+    double val = -1; // changed this from 0 to -1 because an index was chosen on the diag - if everything off diag is 0
     int i, j, max_i = 0, max_j = 0;
     int *arr = calloc(2, sizeof(double));
     assert(arr);
@@ -357,8 +360,8 @@ int *max_indices_off_diag(double **A, int N) {
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             if (i != j) {
-                if (fabs(A[i][j]) > res) {
-                    res = fabs(A[i][j]);
+                if (fabs(A[i][j]) > val) {
+                    val = fabs(A[i][j]);
                     max_i = i;
                     max_j = j;
                 }
@@ -419,6 +422,7 @@ double **jacobi(double **A, int N) {
     double diff = MAXFLOAT;
         while (diff > eps && iter < max_iter) {
         iter++;
+        printf("iter = %d\n",iter);
         double off_A = off(A, N);
         A_to_A_tag(A, V, N);
         diff = off_A - off(A, N);
