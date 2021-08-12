@@ -47,7 +47,9 @@ double **gen_P(double, double, int, int, int);
 
 void multi_mat(double **, double **, int);
 
-int eigen_cmp(const void *, const void *);
+void swap(eigen *, eigen *);
+
+void eigen_bubble_sort(eigen *, int);
 
 double *get_diag(double **, int);
 
@@ -60,5 +62,9 @@ double **gen_mat(int, int);
 double **mat_k_eigenvectors(int, int, eigen *);
 
 void normalize_mat(double **, int, int);
+
+int *get_N_dim_from_file(char *);
+
+double ** get_mat_from_file(char *, int, int);
 
 #endif //UNTITLED10_SPKMEANS_H
