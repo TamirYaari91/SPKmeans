@@ -181,11 +181,42 @@ int main(int argc, char *argv[]) {
 //        printf("\n");
         kmeans(U, k, N);
 
+        // testing eigen_bubble_sort //
+
+//        eigen eig1, eig2, eig3;
+//        eig1.value = 2.0; eig2.value = 2.0; eig3.value = 1.0;
+//        double * vec1 = calloc(3,sizeof(double));
+//        double * vec2 = calloc(3,sizeof(double));
+//        double * vec3 = calloc(3,sizeof(double));
+//        vec1[0] = 1.0; vec1[1] = 1.0; vec1[2] = 1.0;
+//        vec2[0] = 2.0; vec2[1] = 2.0; vec2[2] = 2.0;
+//        vec3[0] = 3.0; vec3[1] = 3.0; vec3[2] = 3.0;
+//        eig1.vector = vec1; eig2.vector = vec2; eig3.vector = vec3;
+//        eigen eigen_items_test[3];
+//        eigen_items_test[0] = eig1; eigen_items_test[1] = eig2; eigen_items_test[2] = eig3;
+//        printf("\nbefore sorting:\n");
+//
+//        printf("\n1st element in arr:\n");
+//        printf("%lf, ", eigen_items_test[0].value); print_row(eigen_items_test[0].vector,3);
+//        printf("\n2nd element in arr:\n");
+//        printf("%lf, ", eigen_items_test[1].value); print_row(eigen_items_test[1].vector,3);
+//        printf("\n3rd element in arr:\n");
+//        printf("%lf, ", eigen_items_test[2].value); print_row(eigen_items_test[2].vector,3);
+//
+//        printf("\nafter sorting:\n");
+//
+//        eigen_bubble_sort(eigen_items_test,3);
+//
+//        printf("\n1st element in arr:\n");
+//        printf("%lf, ", eigen_items_test[0].value); print_row(eigen_items_test[0].vector,3);
+//        printf("\n2nd element in arr:\n");
+//        printf("%lf, ", eigen_items_test[1].value); print_row(eigen_items_test[1].vector,3);
+//        printf("\n3rd element in arr:\n");
+//        printf("%lf, ", eigen_items_test[2].value); print_row(eigen_items_test[2].vector,3);
+
         return 0;
 
     }
-
-    // need to add big "else" in case goal is not any of the valid options
 
     return 0;
 }
@@ -539,12 +570,38 @@ double *get_ith_column(double **mat, int col_ind, int N) {
     return col;
 }
 
+// A function to implement bubble sort, modified to sort eigen_items - GeeksForGeeks.org
+
+void swap(eigen *xp, eigen *yp) {
+    eigen temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+void eigen_bubble_sort(eigen * arr, int n) {
+    int i, j;
+    int swapped;
+    for (i = 0; i < n - 1; i++) {
+        swapped = 0;
+        for (j = 0; j < n - i - 1; j++) {
+            if (arr[j].value > arr[j + 1].value) {
+                swap(&arr[j], &arr[j + 1]);
+                swapped = 1;
+            }
+        }
+        if (swapped == 0) {
+            break;
+        }
+    }
+}
+
 int eigen_gap(eigen *eigen_items, int N) {
     int i, k = 0;
     double lambda_i, max_diff = -1;
 
-    qsort(eigen_items, N, sizeof(eigen),
-          eigen_cmp); // when sorting values, vectors need to be sorted accordingly - struct?
+//    qsort(eigen_items, N, sizeof(eigen),
+//          eigen_cmp); // when sorting values, vectors need to be sorted accordingly - struct?
+    eigen_bubble_sort(eigen_items,N);
     for (i = 0; i < (N / 2); i++) {
         lambda_i = fabs(eigen_items[i].value - eigen_items[i + 1].value);
         if (lambda_i > max_diff) {
