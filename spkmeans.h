@@ -59,12 +59,14 @@ int eigen_gap(eigen *, int);
 
 double **gen_mat(int, int);
 
-double **mat_k_eigenvectors(int, int, eigen *);
+double **gen_mat_k_eigenvectors(int, int, eigen *);
 
 void normalize_mat(double **, int, int);
 
 int *get_N_dim_from_file(char *);
 
 double ** get_mat_from_file(char *, int, int);
+
+void free_mat (double **);
 
 #endif //UNTITLED10_SPKMEANS_H

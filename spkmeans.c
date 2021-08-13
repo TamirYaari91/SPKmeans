@@ -8,10 +8,6 @@
 
 #define eps 0.001
 
-// maybe we can improve complexity of matrices functions if matrices are initialized to zero
-
-// need to free memory
-
 
 int main(int argc, char *argv[]) {
     int i, k, N, dim;
@@ -32,7 +28,6 @@ int main(int argc, char *argv[]) {
     filename = argv[3];
 
     int *N_dim = get_N_dim_from_file(filename);
-
     N = N_dim[0];
     dim = N_dim[1];
 
@@ -45,6 +40,7 @@ int main(int argc, char *argv[]) {
         data_points = get_mat_from_file(filename, N, dim);
         double **W = wam(data_points, N, dim);
         print_mat(W, N, N);
+        free_mat(W);
         return 0;
     }
 
@@ -53,6 +49,8 @@ int main(int argc, char *argv[]) {
         double **W = wam(data_points, N, dim);
         double **D = ddg(W, N);
         print_mat(D, N, N);
+        free_mat(W);
+        free_mat(D);
         return 0;
     }
 
@@ -62,31 +60,31 @@ int main(int argc, char *argv[]) {
         double **D = ddg(W, N);
         lnorm(W, D, N);
         print_mat(W, N, N);
+        free_mat(W);
+        free_mat(D);
         return 0;
     }
 
     if (strcmp(goal, "jacobi") == 0) {
-        double **W = get_mat_from_file(filename,N,N);
-        double **V;
-        V = jacobi(W, N);
+        double **W = get_mat_from_file(filename, N, N);
+        double **V = jacobi(W, N);
         double *eigenvalues = get_diag(W, N);
         print_row(eigenvalues, N);
         printf("\n");
-        eigen *eigen_items = calloc(N, sizeof(eigen));
-        assert(eigen_items);
         for (i = 0; i < N; i++) {
             double *eigenvector = get_ith_column(V, i, N);
             print_row(eigenvector, N);
             if (i != N - 1) {
                 printf("\n");
             }
-            eigen item;
-            item.value = eigenvalues[i];
-            item.vector = eigenvector;
-            eigen_items[i] = item;
+            free(eigenvector);
         }
+        free_mat(W);
+        free_mat(V);
+        free(eigenvalues);
         return 0;
     }
+
     if (strcmp(goal, "spk") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
         double **W = wam(data_points, N, dim);
@@ -107,13 +105,20 @@ int main(int argc, char *argv[]) {
             k = eigen_gap(eigen_items, N);
         }
         double **U;
-        U = mat_k_eigenvectors(N, k, eigen_items);
+        U = gen_mat_k_eigenvectors(N, k, eigen_items);
         normalize_mat(U, N, k);
         kmeans(U, k, N);
+        free_mat(W);
+        free_mat(D);
+        free_mat(V);
+        free(eigenvalues);
+        for (i = 0; i < N; i++) {
+            free(eigen_items[i].vector);
+        }
+        free(eigen_items);
+        free_mat(U);
         return 0;
-    }
-
-    else { // goal is not any of the valid options
+    } else { // goal is not any of the valid options
         printf("Invalid Input!");
         return 0;
     }
@@ -140,7 +145,7 @@ double **wam(double **data_points, int N, int dim) {
     assert(W);
     for (i = 0; i < N; i++) {
         W[i] = block + i * N;
-        W[i][i] = 0.0; // W_ii = 0
+//        W[i][i] = 0.0; // W_ii = 0 - not needed because calloc initializes to zero?
     }
     for (i = 0; i < N; i++) {
         while (j < N) {
@@ -199,9 +204,10 @@ double **ddg(double **wam_mat, int N) {
         for (j = 0; j < N; j++) {
             if (i == j) {
                 D[i][j] = sum_row(wam_mat[i], N);
-            } else {
-                D[i][j] = 0.0;
             }
+//            else {
+//                D[i][j] = 0.0;
+//            } not needed because calloc initializes to zero?
         }
     }
     return D;
@@ -260,6 +266,7 @@ void reg_mat_multi_diag_mat(double **D, double **W, int N) { // result mat is W 
             W[i][j] *= D_diag[j];
         }
     }
+    free(D_diag); // ??
 }
 
 void identity_minus_reg_mat(double **mat, int N) {
@@ -283,12 +290,14 @@ void A_to_A_tag(double **A, double **V, int N) {
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
     j = arr_max[1];
+    free(arr_max); // ??
     theta = (A[j][j] - A[i][i]) / (2 * A[i][j]);
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
     double **P = gen_P(s, c, i, j, N);
     multi_mat(V, P, N);
+    free_mat(P); // ??
 
     for (r = 0; r < N; r++) {
         if ((r != j) && (r != i)) {
@@ -313,7 +322,6 @@ int *max_indices_off_diag(double **A, int N) {
     int i, j, max_i = 0, max_j = 0;
     int *arr = calloc(2, sizeof(double));
     assert(arr);
-
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -366,16 +374,18 @@ double **gen_id_mat(int N) {
         for (j = 0; j < N; j++) {
             if (i == j) {
                 I[i][j] = 1.0;
-            } else {
-                I[i][j] = 0.0;
             }
+//            else {
+//                I[i][j] = 0.0;
+//            } not needed because calloc initializes to zero?
         }
     }
     return I;
 }
 
 double **gen_mat(int N, int k) {
-    int i, j;
+    int i;
+//    int j;
     double **M;
     double *block;
 
@@ -385,10 +395,9 @@ double **gen_mat(int N, int k) {
     assert(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
-        //maybe not necessary:
-        for (j = 0; j < k; j++) {
-            M[i][j] = 0.0;
-        }
+//        for (j = 0; j < k; j++) {
+//            M[i][j] = 0.0;
+//        } not needed because calloc initializes to zero?
     }
     return M;
 }
@@ -431,6 +440,7 @@ void multi_mat(double **mat1, double **mat2, int N) {
             mat1[i][j] = res[i][j];
         }
     }
+    free_mat(res); // ??
 }
 
 double *get_diag(double **mat, int N) {
@@ -495,7 +505,7 @@ int eigen_gap(eigen *eigen_items, int N) {
     return k;
 }
 
-double **mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
+double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
     int i, j;
     double **U;
     U = gen_mat(N, k);
@@ -587,6 +597,11 @@ double **get_mat_from_file(char *filename, int N, int dim) {
     data_points[i][j] = n1;
     fclose(fp);
     return data_points;
+}
+
+void free_mat(double **mat) {
+    free(mat[0]);
+    free(mat);
 }
 
 
