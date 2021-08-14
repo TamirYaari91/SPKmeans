@@ -9,6 +9,8 @@ typedef struct {
 
 int kmeans(double **, int, int);
 
+void spkmeans(char* , char*, int);
+
 double **wam(double **, int, int);
 
 double **ddg(double **, int);

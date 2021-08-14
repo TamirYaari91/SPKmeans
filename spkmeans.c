@@ -8,11 +8,11 @@
 
 #define eps 0.001
 
+// change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
 
 int main(int argc, char *argv[]) {
-    int i, k, N, dim;
+    int k;
     char *goal, *filename, *end_k;
-    double **data_points;
 
     if (argc < 3) {
         printf("Invalid Input!");
@@ -27,13 +27,21 @@ int main(int argc, char *argv[]) {
     goal = argv[2];
     filename = argv[3];
 
+    spkmeans(filename,goal,k);
+    return 0;
+}
+
+void spkmeans(char* filename, char* goal, int k) {
+    int i, N, dim;
+    double **data_points;
+
     int *N_dim = get_N_dim_from_file(filename);
     N = N_dim[0];
     dim = N_dim[1];
 
     if (k >= N) {
         printf("Invalid Input!");
-        return 0;
+        return;
     }
 
     if (strcmp(goal, "wam") == 0) {
@@ -41,7 +49,7 @@ int main(int argc, char *argv[]) {
         double **W = wam(data_points, N, dim);
         print_mat(W, N, N);
         free_mat(W);
-        return 0;
+        return;
     }
 
     if (strcmp(goal, "ddg") == 0) {
@@ -51,7 +59,7 @@ int main(int argc, char *argv[]) {
         print_mat(D, N, N);
         free_mat(W);
         free_mat(D);
-        return 0;
+        return;
     }
 
     if (strcmp(goal, "lnorm") == 0) {
@@ -62,7 +70,7 @@ int main(int argc, char *argv[]) {
         print_mat(W, N, N);
         free_mat(W);
         free_mat(D);
-        return 0;
+        return;
     }
 
     if (strcmp(goal, "jacobi") == 0) {
@@ -82,7 +90,7 @@ int main(int argc, char *argv[]) {
         free_mat(W);
         free_mat(V);
         free(eigenvalues);
-        return 0;
+        return;
     }
 
     if (strcmp(goal, "spk") == 0) {
@@ -117,10 +125,10 @@ int main(int argc, char *argv[]) {
         }
         free(eigen_items);
         free_mat(U);
-        return 0;
+        return;
     } else { // goal is not any of the valid options
         printf("Invalid Input!");
-        return 0;
+        return;
     }
 }
 
