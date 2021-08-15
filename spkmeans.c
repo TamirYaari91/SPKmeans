@@ -109,6 +109,7 @@ void spkmeans(char* filename, char* goal, int k) {
             item.vector = eigenvector;
             eigen_items[i] = item;
         }
+        eigen_bubble_sort(eigen_items, N);
         if (k == 0) {
             k = eigen_gap(eigen_items, N);
         }
@@ -153,7 +154,7 @@ double **wam(double **data_points, int N, int dim) {
     assert(W);
     for (i = 0; i < N; i++) {
         W[i] = block + i * N;
-//        W[i][i] = 0.0; // W_ii = 0 - not needed because calloc initializes to zero?
+        //        W[i][i] = 0.0; // W_ii = 0 - not needed because calloc initializes to zero?
     }
     for (i = 0; i < N; i++) {
         while (j < N) {
@@ -213,9 +214,9 @@ double **ddg(double **wam_mat, int N) {
             if (i == j) {
                 D[i][j] = sum_row(wam_mat[i], N);
             }
-//            else {
-//                D[i][j] = 0.0;
-//            } not needed because calloc initializes to zero?
+            //            else {
+            //                D[i][j] = 0.0;
+            //            } not needed because calloc initializes to zero?
         }
     }
     return D;
@@ -383,9 +384,9 @@ double **gen_id_mat(int N) {
             if (i == j) {
                 I[i][j] = 1.0;
             }
-//            else {
-//                I[i][j] = 0.0;
-//            } not needed because calloc initializes to zero?
+            //            else {
+            //                I[i][j] = 0.0;
+            //            } not needed because calloc initializes to zero?
         }
     }
     return I;
@@ -393,7 +394,7 @@ double **gen_id_mat(int N) {
 
 double **gen_mat(int N, int k) {
     int i;
-//    int j;
+    //    int j;
     double **M;
     double *block;
 
@@ -403,9 +404,9 @@ double **gen_mat(int N, int k) {
     assert(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
-//        for (j = 0; j < k; j++) {
-//            M[i][j] = 0.0;
-//        } not needed because calloc initializes to zero?
+        //        for (j = 0; j < k; j++) {
+        //            M[i][j] = 0.0;
+        //        } not needed because calloc initializes to zero?
     }
     return M;
 }
@@ -501,7 +502,6 @@ void eigen_bubble_sort(eigen *arr, int n) {
 int eigen_gap(eigen *eigen_items, int N) {
     int i, k = 0;
     double lambda_i, max_diff = -1;
-    eigen_bubble_sort(eigen_items, N);
     for (i = 0; i < (N / 2); i++) {
         lambda_i = fabs(eigen_items[i].value - eigen_items[i + 1].value);
         if (lambda_i > max_diff) {
@@ -611,5 +611,3 @@ void free_mat(double **mat) {
     free(mat[0]);
     free(mat);
 }
-
-
