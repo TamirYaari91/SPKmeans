@@ -8,7 +8,10 @@
 
 #define eps 0.001
 
-// change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
+/*
+change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0; 
+*/
+
 
 int main(int argc, char *argv[]) {
     int k;
@@ -127,7 +130,7 @@ void spkmeans(char* filename, char* goal, int k) {
         free(eigen_items);
         free_mat(U);
         return;
-    } else { // goal is not any of the valid options
+    } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
         return;
     }
@@ -154,7 +157,8 @@ double **wam(double **data_points, int N, int dim) {
     assert(W);
     for (i = 0; i < N; i++) {
         W[i] = block + i * N;
-        //        W[i][i] = 0.0; // W_ii = 0 - not needed because calloc initializes to zero?
+        /*W[i][i] = 0.0; */
+        /*W_ii = 0 - not needed because calloc initializes to zero?*/
     }
     for (i = 0; i < N; i++) {
         while (j < N) {
@@ -214,9 +218,9 @@ double **ddg(double **wam_mat, int N) {
             if (i == j) {
                 D[i][j] = sum_row(wam_mat[i], N);
             }
-            //            else {
-            //                D[i][j] = 0.0;
-            //            } not needed because calloc initializes to zero?
+/*                        else {
+                            D[i][j] = 0.0;
+                        } not needed because calloc initializes to zero?*/
         }
     }
     return D;
@@ -250,7 +254,7 @@ void diag_mat_pow_half(double **mat, int N) {
     }
 }
 
-void diag_mat_multi_reg_mat(double **D, double **W, int N) { // result mat is W - the reg mat - the second mat!
+void diag_mat_multi_reg_mat(double **D, double **W, int N) { /*result mat is W - the reg mat - the second mat!*/
     int i, j;
     double d_ii;
 
@@ -262,7 +266,7 @@ void diag_mat_multi_reg_mat(double **D, double **W, int N) { // result mat is W 
     }
 }
 
-void reg_mat_multi_diag_mat(double **D, double **W, int N) { // result mat is W - the reg mat - the second mat!
+void reg_mat_multi_diag_mat(double **D, double **W, int N) { /*result mat is W - the reg mat - the second mat!*/
     int i, j;
     double *D_diag;
     D_diag = calloc(N, sizeof(double));
@@ -275,7 +279,7 @@ void reg_mat_multi_diag_mat(double **D, double **W, int N) { // result mat is W 
             W[i][j] *= D_diag[j];
         }
     }
-    free(D_diag); // ??
+    free(D_diag);
 }
 
 void identity_minus_reg_mat(double **mat, int N) {
@@ -299,14 +303,14 @@ void A_to_A_tag(double **A, double **V, int N) {
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
     j = arr_max[1];
-    free(arr_max); // ??
+    free(arr_max);
     theta = (A[j][j] - A[i][i]) / (2 * A[i][j]);
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
     double **P = gen_P(s, c, i, j, N);
     multi_mat(V, P, N);
-    free_mat(P); // ??
+    free_mat(P);
 
     for (r = 0; r < N; r++) {
         if ((r != j) && (r != i)) {
@@ -384,9 +388,9 @@ double **gen_id_mat(int N) {
             if (i == j) {
                 I[i][j] = 1.0;
             }
-            //            else {
-            //                I[i][j] = 0.0;
-            //            } not needed because calloc initializes to zero?
+/*                        else {
+                            I[i][j] = 0.0;
+                        } not needed because calloc initializes to zero?*/
         }
     }
     return I;
@@ -394,7 +398,9 @@ double **gen_id_mat(int N) {
 
 double **gen_mat(int N, int k) {
     int i;
-    //    int j;
+/*
+        int j;
+*/
     double **M;
     double *block;
 
@@ -404,9 +410,11 @@ double **gen_mat(int N, int k) {
     assert(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
-        //        for (j = 0; j < k; j++) {
-        //            M[i][j] = 0.0;
-        //        } not needed because calloc initializes to zero?
+/*
+                for (j = 0; j < k; j++) {
+                    M[i][j] = 0.0;
+                } not needed because calloc initializes to zero?
+*/
     }
     return M;
 }
@@ -449,7 +457,7 @@ void multi_mat(double **mat1, double **mat2, int N) {
             mat1[i][j] = res[i][j];
         }
     }
-    free_mat(res); // ??
+    free_mat(res);
 }
 
 double *get_diag(double **mat, int N) {
@@ -474,7 +482,9 @@ double *get_ith_column(double **mat, int col_ind, int N) {
     return col;
 }
 
-// A function to implement bubble sort, modified to sort eigen_items - GeeksForGeeks.org
+/*
+ A function to implement bubble sort, modified to sort eigen_items - GeeksForGeeks.org
+*/
 
 void swap(eigen *xp, eigen *yp) {
     eigen temp = *xp;
@@ -553,7 +563,9 @@ int *get_N_dim_from_file(char *filename) {
     fp = fopen(filename, "r");
     assert(fp != NULL);
 
-    // calculating dim and N //
+/*
+     calculating dim and N
+*/
     while ((read = getline(&line, &len, fp)) != -1) {
         if (first_line) {
             for (i = 0; i < read; i++) {
