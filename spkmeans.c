@@ -9,7 +9,7 @@
 #define eps 0.001
 
 /*
-change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0; 
+change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
 */
 
 
@@ -30,15 +30,18 @@ int main(int argc, char *argv[]) {
     goal = argv[2];
     filename = argv[3];
 
-    spkmeans(filename,goal,k);
+    spkmeans(filename, goal, k);
     return 0;
 }
 
-void spkmeans(char* filename, char* goal, int k) {
+void spkmeans(char *filename, char *goal, int k) {
     int i, N, dim;
-    double **data_points;
+    int *N_dim;
+    double *eigenvalues;
+    double **data_points, **W, **D, **V, **U;
+    eigen *eigen_items;
 
-    int *N_dim = get_N_dim_from_file(filename);
+    N_dim = get_N_dim_from_file(filename);
     N = N_dim[0];
     dim = N_dim[1];
 
@@ -49,7 +52,7 @@ void spkmeans(char* filename, char* goal, int k) {
 
     if (strcmp(goal, "wam") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
-        double **W = wam(data_points, N, dim);
+        W = wam(data_points, N, dim);
         print_mat(W, N, N);
         free_mat(W);
         return;
@@ -57,8 +60,8 @@ void spkmeans(char* filename, char* goal, int k) {
 
     if (strcmp(goal, "ddg") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
-        double **W = wam(data_points, N, dim);
-        double **D = ddg(W, N);
+        W = wam(data_points, N, dim);
+        D = ddg(W, N);
         print_mat(D, N, N);
         free_mat(W);
         free_mat(D);
@@ -67,8 +70,8 @@ void spkmeans(char* filename, char* goal, int k) {
 
     if (strcmp(goal, "lnorm") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
-        double **W = wam(data_points, N, dim);
-        double **D = ddg(W, N);
+        W = wam(data_points, N, dim);
+        D = ddg(W, N);
         lnorm(W, D, N);
         print_mat(W, N, N);
         free_mat(W);
@@ -77,9 +80,9 @@ void spkmeans(char* filename, char* goal, int k) {
     }
 
     if (strcmp(goal, "jacobi") == 0) {
-        double **W = get_mat_from_file(filename, N, N);
-        double **V = jacobi(W, N);
-        double *eigenvalues = get_diag(W, N);
+        W = get_mat_from_file(filename, N, N);
+        V = jacobi(W, N);
+        eigenvalues = get_diag(W, N);
         print_row(eigenvalues, N);
         printf("\n");
         for (i = 0; i < N; i++) {
@@ -98,12 +101,12 @@ void spkmeans(char* filename, char* goal, int k) {
 
     if (strcmp(goal, "spk") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
-        double **W = wam(data_points, N, dim);
-        double **D = ddg(W, N);
+        W = wam(data_points, N, dim);
+        D = ddg(W, N);
         lnorm(W, D, N);
-        double **V = jacobi(W, N);
-        double *eigenvalues = get_diag(W, N);
-        eigen *eigen_items = calloc(N, sizeof(eigen));
+        V = jacobi(W, N);
+        eigenvalues = get_diag(W, N);
+        eigen_items = calloc(N, sizeof(eigen));
         assert(eigen_items);
         for (i = 0; i < N; i++) {
             double *eigenvector = get_ith_column(V, i, N);
@@ -116,7 +119,6 @@ void spkmeans(char* filename, char* goal, int k) {
         if (k == 0) {
             k = eigen_gap(eigen_items, N);
         }
-        double **U;
         U = gen_mat_k_eigenvectors(N, k, eigen_items);
         normalize_mat(U, N, k);
         kmeans(U, k, N);
@@ -138,7 +140,8 @@ void spkmeans(char* filename, char* goal, int k) {
 
 double norm(double *p1, double *p2, int dim) {
     int i;
-    double res, sum = 0;
+    double res, sum;
+    sum = 0;
     for (i = 0; i < dim; i++) {
         sum += pow(p1[i] - p2[i], 2);
     }
@@ -147,10 +150,11 @@ double norm(double *p1, double *p2, int dim) {
 }
 
 double **wam(double **data_points, int N, int dim) {
-    int i, j = 0;
+    int i, j;
     double **W;
     double *block;
 
+    j = 0;
     block = calloc(N * N, sizeof(double));
     assert(block);
     W = calloc(N, sizeof(double *));
@@ -236,7 +240,8 @@ void lnorm(double **W, double **D, int N) {
 
 double sum_row(const double *mat, int m) {
     int i;
-    double res = 0;
+    double res;
+    res = 0;
     for (i = 0; i < m; i++) {
         res += mat[i];
     }
@@ -299,6 +304,7 @@ void A_to_A_tag(double **A, double **V, int N) {
     int i, j, r;
     int *arr_max;
     double theta, s, t, c, a_ri, a_rj, a_ii, a_jj;
+    double **P;
 
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
@@ -308,7 +314,7 @@ void A_to_A_tag(double **A, double **V, int N) {
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-    double **P = gen_P(s, c, i, j, N);
+    P = gen_P(s, c, i, j, N);
     multi_mat(V, P, N);
     free_mat(P);
 
@@ -331,9 +337,15 @@ void A_to_A_tag(double **A, double **V, int N) {
 }
 
 int *max_indices_off_diag(double **A, int N) {
-    double val = -1;
-    int i, j, max_i = 0, max_j = 0;
-    int *arr = calloc(2, sizeof(double));
+    double val;
+    int i, j, max_i, max_j;
+    int *arr;
+
+    val = -1;
+    max_i = 0;
+    max_j = 0;
+
+    arr = calloc(2, sizeof(double));
     assert(arr);
 
     for (i = 0; i < N; i++) {
@@ -362,7 +374,9 @@ int sign(double num) {
 
 double off(double **A, int N) {
     int i, j;
-    double res = 0;
+    double res;
+
+    res = 0;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             if (i != j) {
@@ -421,12 +435,18 @@ double **gen_mat(int N, int k) {
 
 
 double **jacobi(double **A, int N) {
-    int iter = 0, max_iter = 100;
-    double **V = gen_id_mat(N);
-    double diff = MAXFLOAT;
+    int iter, max_iter;
+    double diff;
+    double **V;
+
+    iter = 0;
+    max_iter = 100;
+    V = gen_id_mat(N);
+    diff = 10;
+
     while (diff > eps && iter < max_iter) {
-        iter++;
         double off_A = off(A, N);
+        iter++;
         A_to_A_tag(A, V, N);
         diff = off_A - off(A, N);
     }
@@ -434,7 +454,8 @@ double **jacobi(double **A, int N) {
 }
 
 double **gen_P(double s, double c, int i, int j, int N) {
-    double **P = gen_id_mat(N);
+    double **P;
+    P = gen_id_mat(N);
     P[i][j] = s;
     P[j][i] = -s;
     P[i][i] = c;
@@ -444,7 +465,9 @@ double **gen_P(double s, double c, int i, int j, int N) {
 
 void multi_mat(double **mat1, double **mat2, int N) {
     int i, j, k;
-    double **res = gen_id_mat(N);
+    double **res;
+    res = gen_id_mat(N);
+
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             res[i][j] = 0;
@@ -474,7 +497,8 @@ double *get_diag(double **mat, int N) {
 
 double *get_ith_column(double **mat, int col_ind, int N) {
     int i;
-    double *col = calloc(N, sizeof(double));
+    double *col;
+    col = calloc(N, sizeof(double));
     assert(col);
     for (i = 0; i < N; i++) {
         col[i] = mat[i][col_ind];
@@ -487,7 +511,8 @@ double *get_ith_column(double **mat, int col_ind, int N) {
 */
 
 void swap(eigen *xp, eigen *yp) {
-    eigen temp = *xp;
+    eigen temp;
+    temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
@@ -510,8 +535,12 @@ void eigen_bubble_sort(eigen *arr, int n) {
 }
 
 int eigen_gap(eigen *eigen_items, int N) {
-    int i, k = 0;
-    double lambda_i, max_diff = -1;
+    int i, k;
+    double lambda_i, max_diff;
+
+    max_diff = -1;
+    k = 0;
+
     for (i = 0; i < (N / 2); i++) {
         lambda_i = fabs(eigen_items[i].value - eigen_items[i + 1].value);
         if (lambda_i > max_diff) {
@@ -539,7 +568,8 @@ double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
 void normalize_mat(double **U, int N, int k) {
     int i, j;
     for (i = 0; i < k; i++) {
-        double norm = 0;
+        double norm;
+        norm = 0;
         for (j = 0; j < N; j++) {
             norm += pow(U[j][i], 2);
         }
@@ -551,13 +581,20 @@ void normalize_mat(double **U, int N, int k) {
 }
 
 int *get_N_dim_from_file(char *filename) {
-    int i, N = 0, dim = 1, first_line = 1;
-    char *line = NULL;
+    int i, N, dim, first_line;
+    char *line;
+    int *res;
     FILE *fp;
-    size_t len = 0;
+    size_t len;
     ssize_t read;
 
-    int *res = calloc(2, sizeof(int));
+    N = 0;
+    dim = 1;
+    first_line = 1;
+    line = NULL;
+    len = 0;
+
+    res = calloc(2, sizeof(int));
     assert(res);
 
     fp = fopen(filename, "r");
@@ -590,11 +627,12 @@ int *get_N_dim_from_file(char *filename) {
 double **get_mat_from_file(char *filename, int N, int dim) {
     double n1;
     char c;
-    int i, j = 0;
+    int i, j;
     double **data_points;
     double *block;
     FILE *fp;
 
+    j = 0;
     fp = fopen(filename, "r");
     assert(fp != NULL);
 
