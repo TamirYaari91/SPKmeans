@@ -78,4 +78,6 @@ void free_mat (double **);
 
 PyObject *mat_to_Python_mat(double **mat, int, int);
 
+PyObject * kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
+
 #endif /*UNTITLED10_SPKMEANS_H*/

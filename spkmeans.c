@@ -5,6 +5,8 @@
 #include <math.h>
 #include "spkmeans.h"
 #include "kmeans.h"
+#include "kmeans2.h"
+
 /*
 #include <Python/Python.h>
 */
@@ -13,10 +15,15 @@
 #define eps 0.001
 
 /*
-change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
+What's left?
+
+- change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
+- free N_dim, data_points, more?
+- comment the code with explanations
+- as per Rami's answer - change normalization of vectors?
+- check in nova - make sure to change Python include in all relevant files!
 */
 
-/*free N_dim, data_points, more?*/
 
 
 int main(int argc, char *argv[]) {
@@ -703,4 +710,10 @@ PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
         PyList_SET_ITEM(res, i, item);
     }
     return res;
+}
+
+PyObject * kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
+                      PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
+    return kmeans2(k, num_of_lines, dim, centroids_py,
+            points_to_cluster_py, centroids_length, points_to_cluster_length);
 }

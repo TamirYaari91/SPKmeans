@@ -36,6 +36,25 @@ static PyObject *fit(PyObject *self, PyObject *args) {
                          spkmeans(filename, goal, k, 1)); /*  Py_BuildValue(...) returns a PyObject*  */
 }
 
+static PyObject *fit2(PyObject *self, PyObject *args) {
+    int k;
+    int num_of_lines;
+    int dim;
+    PyObject *centroids_py;
+    PyObject *points_to_cluster_py;
+    int centroids_length;
+    int points_to_cluster_length;
+
+    if (!PyArg_ParseTuple(args, "lllOOll:fit2", &k, &num_of_lines, &dim, &centroids_py,
+                          &points_to_cluster_py,
+                          &centroids_length, &points_to_cluster_length)) {
+        return NULL;
+    }
+
+    return Py_BuildValue("O", kmeans2_py(k, num_of_lines, dim, centroids_py, points_to_cluster_py,
+                                      centroids_length, points_to_cluster_length));
+}
+
 /*
  * This array tells Python what methods this module has.
  * We will use it in the next structure
@@ -44,7 +63,12 @@ static PyMethodDef capiMethods[] = {
         {"fit",                   /* the Python method name that will be used */
          (PyCFunction) fit, /* the C-function that implements the Python function and returns static PyObject*  */
          METH_VARARGS,           /* flags indicating parametersaccepted for this function */
-         PyDoc_STR("A C function to calculate spkmeans")}, /*  The docstring for the function */
+         PyDoc_STR("A C function to generate T matrix as per steps 1-6 in Normalized Spectral Clustering Algorithm or generate relevant matrix as per goal")},
+         {"fit2",                   /* the Python method name that will be used */
+         (PyCFunction) fit2, /* the C-function that implements the Python function and returns static PyObject*  */
+         METH_VARARGS,           /* flags indicating parametersaccepted for this function */
+         PyDoc_STR("A C function to perform KMeans calculation after KMeans++ was performed")},
+          /*  The docstring for the function */
         { NULL, NULL, 0, NULL }     /* The last entry must be all NULL as shown to act as a
                                  sentinel. Python looks for this entry to know that all
                                  of the functions for the module have been defined. */

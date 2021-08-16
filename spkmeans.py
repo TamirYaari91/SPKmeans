@@ -38,6 +38,7 @@ if goal != "spk":
 
 df = pd.DataFrame(data)
 dim = len(df.columns)
+k = dim
 df['cluster'] = -1.0
 points_to_cluster_init = df.to_numpy().flatten().tolist()
 del df['cluster']
@@ -48,7 +49,6 @@ num_of_points = len(np_df)
 df['d'] = np.nan
 df['p'] = np.nan
 np_df_ext = df.to_numpy()
-print(df)
 
 np.random.seed(0)
 rand_start = np.random.randint(0, (len(df) - 1))
@@ -75,17 +75,15 @@ while z < k:
 centroids_lists = [np_df[ind].tolist() for ind in centroids_df_indices]  # need to output this to file
 centroids_init = [num for sublist in centroids_lists for num in sublist]
 
-# num_of_lines = len(df)
 to_print = ','.join([str(num) for num in centroids_df_indices])
 print(to_print)
-#
-# centroids = mykmeanssp.fit(k, max_iter, num_of_lines, dim, centroids_init, points_to_cluster_init,
-#                            len(centroids_init),
-#                            len(points_to_cluster_init))
-#
-# centroids = np.asarray(centroids).round(4)
-# centroids = np.array_split(centroids, k)
-# centroids = [centroids[i].tolist() for i in range(len(centroids))]
-#
-# for cent in centroids:
-#     print(','.join(str(val) for val in cent))
+
+centroids = myspkmeans.fit2(k, num_of_points, dim, centroids_init, points_to_cluster_init,
+                            len(centroids_init), len(points_to_cluster_init))
+
+centroids = np.asarray(centroids).round(4)
+centroids = np.array_split(centroids, k)
+centroids = [centroids[i].tolist() for i in range(len(centroids))]
+
+for cent in centroids:
+    print(','.join(str(val) for val in cent))
