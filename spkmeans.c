@@ -5,12 +5,18 @@
 #include <math.h>
 #include "spkmeans.h"
 #include "kmeans.h"
+/*
+#include <Python/Python.h>
+*/
+#include <python3.7/Python.h>
 
 #define eps 0.001
 
 /*
 change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
 */
+
+/*free N_dim, data_points, more?*/
 
 
 int main(int argc, char *argv[]) {
@@ -30,24 +36,26 @@ int main(int argc, char *argv[]) {
     goal = argv[2];
     filename = argv[3];
 
-    spkmeans(filename, goal, k);
+    spkmeans(filename, goal, k, 0);
     return 0;
 }
 
-void spkmeans(char *filename, char *goal, int k) {
+PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 0 -> C | source == 1 -> Python*/
     int i, N, dim;
     int *N_dim;
     double *eigenvalues;
     double **data_points, **W, **D, **V, **U;
     eigen *eigen_items;
+    PyObject *res;
 
+    res = PyLong_FromLong(-1);
     N_dim = get_N_dim_from_file(filename);
     N = N_dim[0];
     dim = N_dim[1];
 
     if (k >= N) {
         printf("Invalid Input!");
-        return;
+        return res;
     }
 
     if (strcmp(goal, "wam") == 0) {
@@ -55,7 +63,7 @@ void spkmeans(char *filename, char *goal, int k) {
         W = wam(data_points, N, dim);
         print_mat(W, N, N);
         free_mat(W);
-        return;
+        return res;
     }
 
     if (strcmp(goal, "ddg") == 0) {
@@ -65,7 +73,7 @@ void spkmeans(char *filename, char *goal, int k) {
         print_mat(D, N, N);
         free_mat(W);
         free_mat(D);
-        return;
+        return res;
     }
 
     if (strcmp(goal, "lnorm") == 0) {
@@ -76,7 +84,7 @@ void spkmeans(char *filename, char *goal, int k) {
         print_mat(W, N, N);
         free_mat(W);
         free_mat(D);
-        return;
+        return res;
     }
 
     if (strcmp(goal, "jacobi") == 0) {
@@ -88,15 +96,13 @@ void spkmeans(char *filename, char *goal, int k) {
         for (i = 0; i < N; i++) {
             double *eigenvector = get_ith_column(V, i, N);
             print_row(eigenvector, N);
-            if (i != N - 1) {
-                printf("\n");
-            }
+            printf("\n");
             free(eigenvector);
         }
         free_mat(W);
         free_mat(V);
         free(eigenvalues);
-        return;
+        return res;
     }
 
     if (strcmp(goal, "spk") == 0) {
@@ -120,8 +126,8 @@ void spkmeans(char *filename, char *goal, int k) {
             k = eigen_gap(eigen_items, N);
         }
         U = gen_mat_k_eigenvectors(N, k, eigen_items);
-        normalize_mat(U, N, k);
-        kmeans(U, k, N);
+        normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
+
         free_mat(W);
         free_mat(D);
         free_mat(V);
@@ -130,11 +136,20 @@ void spkmeans(char *filename, char *goal, int k) {
             free(eigen_items[i].vector);
         }
         free(eigen_items);
-        free_mat(U);
-        return;
+
+        if (source) {
+            res = mat_to_Python_mat(U, N, k);   /*converts U to Pyobject*/
+            free_mat(U);
+            return res;
+        } else {
+            kmeans(U, k, N);
+            free_mat(U);
+            return res;
+        }
+
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
-        return;
+        return res;
     }
 }
 
@@ -177,7 +192,7 @@ double **wam(double **data_points, int N, int dim) {
     return W;
 }
 
-void print_mat(double **mat, int N, int dim) {
+/*void print_mat(double **mat, int N, int dim) {
     int row, columns;
     for (row = 0; row < N; row++) {
         for (columns = 0; columns < dim; columns++) {
@@ -195,7 +210,22 @@ void print_mat(double **mat, int N, int dim) {
             }
         }
     }
+}*/
+
+void print_mat(double **mat, int N, int dim) {
+    int row, columns;
+    for (row = 0; row < N; row++) {
+        for (columns = 0; columns < dim; columns++) {
+            printf("%.4lf", mat[row][columns]);
+            if (columns == dim - 1) {
+                printf("\n");
+            } else {
+                printf(",");
+            }
+        }
+    }
 }
+
 
 void print_row(double *row, int len) {
     int i;
@@ -660,4 +690,17 @@ double **get_mat_from_file(char *filename, int N, int dim) {
 void free_mat(double **mat) {
     free(mat[0]);
     free(mat);
+}
+
+PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
+    Py_ssize_t i, j, rows = N, columns = dim;
+    PyObject *res = PyList_New(N);
+
+    for (i = 0; i < rows; i++) {
+        PyObject *item = PyList_New(dim);
+        for (j = 0; j < columns; j++)
+            PyList_SET_ITEM(item, j, PyFloat_FromDouble(mat[i][j]));
+        PyList_SET_ITEM(res, i, item);
+    }
+    return res;
 }

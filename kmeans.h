@@ -12,7 +12,7 @@ int update_centroids(int, int, double *, double *);
 int equal(const double *, const double *, int);
 
 int kmeans(double **T, int k, int N) {
-    int changed;
+    int changed, cnt;
     double *centroids;
     double *points_to_cluster;
     int i, j, iters, max_iter = 300;
@@ -25,7 +25,7 @@ int kmeans(double **T, int k, int N) {
         points_to_cluster[i] = 0.0;
     }
 
-    int cnt = 0;
+    cnt = 0;
     for (i = 0; i < N; i++) {
         for (j = 0; j < k + 1; j++) {
             if (cnt == k) {
@@ -63,9 +63,7 @@ int kmeans(double **T, int k, int N) {
         if ((i + 1) % k != 0) {
             printf(",");
         } else {
-            if (i < (k * k) - 1) {
                 printf("\n");
-            }
         }
     }
     free(centroids);
@@ -174,4 +172,4 @@ int equal(const double *arr1, const double *arr2, int k) {
     return 1;
 }
 
-#endif //UNTITLED10_KMEANS_H
+#endif

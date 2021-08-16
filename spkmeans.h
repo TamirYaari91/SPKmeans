@@ -1,6 +1,11 @@
 #ifndef UNTITLED10_SPKMEANS_H
 #define UNTITLED10_SPKMEANS_H
 
+/*
+#include <Python/Python.h>
+*/
+#include <python3.7/Python.h>
+
 
 typedef struct {
     double value;
@@ -9,7 +14,7 @@ typedef struct {
 
 int kmeans(double **, int, int);
 
-void spkmeans(char* , char*, int);
+PyObject * spkmeans(char* , char*, int, int);
 
 double **wam(double **, int, int);
 
@@ -27,9 +32,9 @@ double sum_row(const double *, int);
 
 void diag_mat_pow_half(double **, int);
 
-void diag_mat_multi_reg_mat(double **, double **, int); // result mat is W - the reg mat - the second mat!
+void diag_mat_multi_reg_mat(double **, double **, int); /*result mat is W - the reg mat - the second mat!*/
 
-void reg_mat_multi_diag_mat(double **, double **, int); // result mat is W - the reg mat - the second mat!
+void reg_mat_multi_diag_mat(double **, double **, int); /*result mat is W - the reg mat - the second mat!*/
 
 void identity_minus_reg_mat(double **, int);
 
@@ -71,4 +76,6 @@ double ** get_mat_from_file(char *, int, int);
 
 void free_mat (double **);
 
-#endif //UNTITLED10_SPKMEANS_H
+PyObject *mat_to_Python_mat(double **mat, int, int);
+
+#endif /*UNTITLED10_SPKMEANS_H*/
