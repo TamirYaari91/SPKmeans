@@ -50,9 +50,9 @@ double **gen_id_mat(int);
 
 double **jacobi(double **, int);
 
-double **gen_P(double, double, int, int, int);
+/*double **gen_P(double, double, int, int, int);
 
-void multi_mat(double **, double **, int);
+void multi_mat(double **, double **, int);*/
 
 void swap(eigen *, eigen *);
 
@@ -79,5 +79,17 @@ void free_mat (double **);
 PyObject *mat_to_Python_mat(double **mat, int, int);
 
 PyObject * kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
+
+void V_multi_P(double **, double, double, int, int, int);
+
+void assert_double_arr(const double * arr);
+
+void assert_int_arr(const int * arr);
+
+void assert_double_mat(double ** mat);
+
+void assert_eigen_arr(eigen * arr);
+
+void assert_fp(FILE * fp);
 
 #endif /*UNTITLED10_SPKMEANS_H*/

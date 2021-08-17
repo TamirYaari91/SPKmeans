@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 #include <math.h>
 #include "spkmeans.h"
@@ -17,11 +16,9 @@
 /*
 What's left?
 
-- change all assertions to check if NULL (?) -> "An Error Has Occurred” and return 0;
-- free N_dim, data_points, more?
 - comment the code with explanations
-- as per Rami's answer - change normalization of vectors?
 - check in nova - make sure to change Python include in all relevant files!
+- compare to testers in Whatsapp group?
 */
 
 
@@ -70,6 +67,8 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         W = wam(data_points, N, dim);
         print_mat(W, N, N);
         free_mat(W);
+        free(data_points);
+        free(N_dim);
         return res;
     }
 
@@ -80,6 +79,8 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         print_mat(D, N, N);
         free_mat(W);
         free_mat(D);
+        free(data_points);
+        free(N_dim);
         return res;
     }
 
@@ -91,6 +92,8 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         print_mat(W, N, N);
         free_mat(W);
         free_mat(D);
+        free(data_points);
+        free(N_dim);
         return res;
     }
 
@@ -109,6 +112,7 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         free_mat(W);
         free_mat(V);
         free(eigenvalues);
+        free(N_dim);
         return res;
     }
 
@@ -120,7 +124,7 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         V = jacobi(W, N);
         eigenvalues = get_diag(W, N);
         eigen_items = calloc(N, sizeof(eigen));
-        assert(eigen_items);
+        assert_eigen_arr(eigen_items);
         for (i = 0; i < N; i++) {
             double *eigenvector = get_ith_column(V, i, N);
             eigen item;
@@ -143,19 +147,23 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
             free(eigen_items[i].vector);
         }
         free(eigen_items);
+        free(data_points);
 
         if (source) {
             res = mat_to_Python_mat(U, N, k);   /*converts U to Pyobject*/
             free_mat(U);
+            free(N_dim);
             return res;
         } else {
             kmeans(U, k, N);
             free_mat(U);
+            free(N_dim);
             return res;
         }
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
+        free(N_dim);
         return res;
     }
 }
@@ -178,9 +186,9 @@ double **wam(double **data_points, int N, int dim) {
 
     j = 0;
     block = calloc(N * N, sizeof(double));
-    assert(block);
+    assert_double_arr(block);
     W = calloc(N, sizeof(double *));
-    assert(W);
+    assert_double_mat(W);
     for (i = 0; i < N; i++) {
         W[i] = block + i * N;
         /*W[i][i] = 0.0; */
@@ -250,9 +258,9 @@ double **ddg(double **wam_mat, int N) {
     double *block;
 
     block = calloc(N * N, sizeof(double));
-    assert(block);
+    assert_double_arr(block);
     D = calloc(N, sizeof(double *));
-    assert(D);
+    assert_double_mat(D);
     for (i = 0; i < N; i++) {
         D[i] = block + i * N;
         for (j = 0; j < N; j++) {
@@ -312,7 +320,7 @@ void reg_mat_multi_diag_mat(double **D, double **W, int N) { /*result mat is W -
     int i, j;
     double *D_diag;
     D_diag = calloc(N, sizeof(double));
-    assert(D_diag);
+    assert_double_arr(D_diag);
     for (i = 0; i < N; i++) {
         D_diag[i] = D[i][i];
     }
@@ -341,7 +349,9 @@ void A_to_A_tag(double **A, double **V, int N) {
     int i, j, r;
     int *arr_max;
     double theta, s, t, c, a_ri, a_rj, a_ii, a_jj;
+/*
     double **P;
+*/
 
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
@@ -351,9 +361,10 @@ void A_to_A_tag(double **A, double **V, int N) {
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-    P = gen_P(s, c, i, j, N);
+/*    P = gen_P(s, c, i, j, N);
     multi_mat(V, P, N);
-    free_mat(P);
+    free_mat(P);*/
+    V_multi_P(V,s,c,N,i,j);
 
     for (r = 0; r < N; r++) {
         if ((r != j) && (r != i)) {
@@ -382,8 +393,8 @@ int *max_indices_off_diag(double **A, int N) {
     max_i = 0;
     max_j = 0;
 
-    arr = calloc(2, sizeof(double));
-    assert(arr);
+    arr = calloc(2, sizeof(int));
+    assert_int_arr(arr);
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -430,9 +441,9 @@ double **gen_id_mat(int N) {
     double *block;
 
     block = calloc(N * N, sizeof(double));
-    assert(block);
+    assert_double_arr(block);
     I = calloc(N, sizeof(double *));
-    assert(I);
+    assert_double_mat(I);
     for (i = 0; i < N; i++) {
         I[i] = block + i * N;
         for (j = 0; j < N; j++) {
@@ -456,9 +467,9 @@ double **gen_mat(int N, int k) {
     double *block;
 
     block = calloc(N * k, sizeof(double));
-    assert(block);
+    assert_double_arr(block);
     M = calloc(N, sizeof(double *));
-    assert(M);
+    assert_double_mat(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
 /*
@@ -490,7 +501,7 @@ double **jacobi(double **A, int N) {
     return V;
 }
 
-double **gen_P(double s, double c, int i, int j, int N) {
+/*double **gen_P(double s, double c, int i, int j, int N) {
     double **P;
     P = gen_id_mat(N);
     P[i][j] = s;
@@ -498,9 +509,9 @@ double **gen_P(double s, double c, int i, int j, int N) {
     P[i][i] = c;
     P[j][j] = c;
     return P;
-}
+}*/
 
-void multi_mat(double **mat1, double **mat2, int N) {
+/*void multi_mat(double **mat1, double **mat2, int N) {
     int i, j, k;
     double **res;
     res = gen_id_mat(N);
@@ -518,13 +529,13 @@ void multi_mat(double **mat1, double **mat2, int N) {
         }
     }
     free_mat(res);
-}
+}*/
 
 double *get_diag(double **mat, int N) {
     int i;
     double *diag;
     diag = calloc(N, sizeof(double));
-    assert(diag);
+    assert_double_arr(diag);
 
     for (i = 0; i < N; i++) {
         diag[i] = mat[i][i];
@@ -536,7 +547,7 @@ double *get_ith_column(double **mat, int col_ind, int N) {
     int i;
     double *col;
     col = calloc(N, sizeof(double));
-    assert(col);
+    assert_double_arr(col);
     for (i = 0; i < N; i++) {
         col[i] = mat[i][col_ind];
     }
@@ -602,7 +613,7 @@ double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
     return U;
 }
 
-void normalize_mat(double **U, int N, int k) {
+/*void normalize_mat(double **U, int N, int k) {
     int i, j;
     for (i = 0; i < k; i++) {
         double norm;
@@ -613,6 +624,21 @@ void normalize_mat(double **U, int N, int k) {
         norm = pow(norm, 0.5);
         for (j = 0; j < N; j++) {
             U[j][i] = U[j][i] / norm;
+        }
+    }
+}*/
+
+void normalize_mat(double **U, int N, int k) {
+    int i, j;
+    for (i = 0; i < N; i++) {
+        double norm;
+        norm = 0;
+        for (j = 0; j < k; j++) {
+            norm += pow(U[i][j], 2);
+        }
+        norm = pow(norm, 0.5);
+        for (j = 0; j < k; j++) {
+            U[i][j] = U[i][j] / norm;
         }
     }
 }
@@ -632,11 +658,10 @@ int *get_N_dim_from_file(char *filename) {
     len = 0;
 
     res = calloc(2, sizeof(int));
-    assert(res);
+    assert_int_arr(res);
 
     fp = fopen(filename, "r");
-    assert(fp != NULL);
-
+    assert_fp(fp);
 /*
      calculating dim and N
 */
@@ -671,12 +696,13 @@ double **get_mat_from_file(char *filename, int N, int dim) {
 
     j = 0;
     fp = fopen(filename, "r");
-    assert(fp != NULL);
+    assert_fp(fp);
 
     block = calloc(N * dim, sizeof(double));
-    assert(block);
+    assert_double_arr(block);
+
     data_points = calloc(N, sizeof(double *));
-    assert(data_points);
+    assert_double_mat(data_points);
     for (i = 0; i < N; i++) {
         data_points[i] = block + i * dim;
     }
@@ -717,3 +743,55 @@ PyObject * kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
     return kmeans2(k, num_of_lines, dim, centroids_py,
             points_to_cluster_py, centroids_length, points_to_cluster_length);
 }
+
+void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
+    /*since P is almost-diagonal, no need to perform full matrix multiplication*/
+    int r;
+    double V_ri, V_rj;
+
+    for (r = 0; r < N; r++) {
+        V_ri = V[r][i];
+        V_rj = V[r][j];
+
+        V[r][i] = (c * V_ri) - (s * V_rj);
+        V[r][j] = (s * V_ri) + (c * V_rj);
+    }
+}
+
+void assert_double_arr(const double * arr) {
+    if (arr == NULL) {
+        printf("An Error Has Occurred");
+        exit(0);
+    }
+}
+
+void assert_int_arr(const int * arr) {
+    if (arr == NULL) {
+        printf("An Error Has Occurred");
+        exit(0);
+    }
+}
+
+void assert_double_mat(double ** mat) {
+    if (mat == NULL) {
+        printf("An Error Has Occurred");
+        exit(0);
+    }
+}
+
+void assert_eigen_arr(eigen * arr) {
+    if (arr == NULL) {
+        printf("An Error Has Occurred");
+        exit(0);
+    }
+}
+
+void assert_fp(FILE * fp) {
+    if (fp == NULL) {
+        printf("An Error Has Occurred");
+        exit(0);
+    }
+
+}
+
+
