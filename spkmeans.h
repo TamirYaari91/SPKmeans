@@ -1,7 +1,9 @@
 #ifndef UNTITLED10_SPKMEANS_H
 #define UNTITLED10_SPKMEANS_H
 
-#include <Python/Python.h>
+#define PY_SSIZE_T_CLEAN
+
+#include <Python.h>
 /*
 #include <python3.7/Python.h>
 */
