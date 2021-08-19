@@ -6,7 +6,7 @@
 #include "kmeans.h"
 #include "kmeans2.h"
 
-#include <Python.h>
+#include <Python/Python.h>
 /*#include <python3.7/Python.h>*/
 
 #define eps 0.001
