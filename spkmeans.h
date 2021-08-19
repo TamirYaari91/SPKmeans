@@ -1,7 +1,7 @@
 #ifndef UNTITLED10_SPKMEANS_H
 #define UNTITLED10_SPKMEANS_H
 
-#include <Python.h>
+#include <Python/Python.h>
 /*
 #include <python3.7/Python.h>
 */
