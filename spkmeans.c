@@ -11,7 +11,9 @@
 #include "kmeans.h"
 #include "kmeans2.h"
 
+/*
 #include <python3.7/Python.h>
+*/
 
 #define eps 0.001
 
@@ -139,6 +141,7 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         }
         U = gen_mat_k_eigenvectors(N, k, eigen_items);
         normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
+
 
         free_mat(W);
         free_mat(D);
