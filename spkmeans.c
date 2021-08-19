@@ -1,7 +1,8 @@
 #define PY_SSIZE_T_CLEAN
 
-//#include <Python.h>
-#include <python2.7/Python.h>
+/*
+#include <Python.h>
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +11,7 @@
 #include "kmeans.h"
 #include "kmeans2.h"
 
-/*#include <python3.7/Python.h>*/
+#include <python3.7/Python.h>
 
 #define eps 0.001
 
@@ -759,35 +760,35 @@ void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
 
 void assert_double_arr(const double * arr) {
     if (arr == NULL) {
-        printf("An Error Has Occurred");
+        printf("An Error Has Occured");
         exit(0);
     }
 }
 
 void assert_int_arr(const int * arr) {
     if (arr == NULL) {
-        printf("An Error Has Occurred");
+        printf("An Error Has Occured");
         exit(0);
     }
 }
 
 void assert_double_mat(double ** mat) {
     if (mat == NULL) {
-        printf("An Error Has Occurred");
+        printf("An Error Has Occured");
         exit(0);
     }
 }
 
 void assert_eigen_arr(eigen * arr) {
     if (arr == NULL) {
-        printf("An Error Has Occurred");
+        printf("An Error Has Occured");
         exit(0);
     }
 }
 
 void assert_fp(FILE * fp) {
     if (fp == NULL) {
-        printf("An Error Has Occurred");
+        printf("An Error Has Occured");
         exit(0);
     }
 
