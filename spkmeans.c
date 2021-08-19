@@ -6,16 +6,13 @@
 #include "kmeans.h"
 #include "kmeans2.h"
 
-/*
-#include <Python/Python.h>
-*/
-#include <python3.7/Python.h>
+#include <Python.h>
+/*#include <python3.7/Python.h>*/
 
 #define eps 0.001
 
 /*
 What's left?
-
 - comment the code with explanations
 - check in nova - make sure to change Python include in all relevant files!
 - compare to testers in Whatsapp group?
@@ -267,9 +264,9 @@ double **ddg(double **wam_mat, int N) {
             if (i == j) {
                 D[i][j] = sum_row(wam_mat[i], N);
             }
-/*                        else {
-                            D[i][j] = 0.0;
-                        } not needed because calloc initializes to zero?*/
+            /*                        else {
+                                        D[i][j] = 0.0;
+                                    } not needed because calloc initializes to zero?*/
         }
     }
     return D;
@@ -349,9 +346,9 @@ void A_to_A_tag(double **A, double **V, int N) {
     int i, j, r;
     int *arr_max;
     double theta, s, t, c, a_ri, a_rj, a_ii, a_jj;
-/*
-    double **P;
-*/
+    /*
+        double **P;
+    */
 
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
@@ -361,9 +358,9 @@ void A_to_A_tag(double **A, double **V, int N) {
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-/*    P = gen_P(s, c, i, j, N);
-    multi_mat(V, P, N);
-    free_mat(P);*/
+    /*    P = gen_P(s, c, i, j, N);
+        multi_mat(V, P, N);
+        free_mat(P);*/
     V_multi_P(V,s,c,N,i,j);
 
     for (r = 0; r < N; r++) {
@@ -450,9 +447,9 @@ double **gen_id_mat(int N) {
             if (i == j) {
                 I[i][j] = 1.0;
             }
-/*                        else {
-                            I[i][j] = 0.0;
-                        } not needed because calloc initializes to zero?*/
+            /*                        else {
+                                        I[i][j] = 0.0;
+                                    } not needed because calloc initializes to zero?*/
         }
     }
     return I;
@@ -460,9 +457,9 @@ double **gen_id_mat(int N) {
 
 double **gen_mat(int N, int k) {
     int i;
-/*
-        int j;
-*/
+    /*
+            int j;
+    */
     double **M;
     double *block;
 
@@ -472,11 +469,11 @@ double **gen_mat(int N, int k) {
     assert_double_mat(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
-/*
-                for (j = 0; j < k; j++) {
-                    M[i][j] = 0.0;
-                } not needed because calloc initializes to zero?
-*/
+        /*
+                        for (j = 0; j < k; j++) {
+                            M[i][j] = 0.0;
+                        } not needed because calloc initializes to zero?
+        */
     }
     return M;
 }
@@ -515,7 +512,6 @@ double **jacobi(double **A, int N) {
     int i, j, k;
     double **res;
     res = gen_id_mat(N);
-
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             res[i][j] = 0;
@@ -662,9 +658,9 @@ int *get_N_dim_from_file(char *filename) {
 
     fp = fopen(filename, "r");
     assert_fp(fp);
-/*
-     calculating dim and N
-*/
+    /*
+         calculating dim and N
+    */
     while ((read = getline(&line, &len, fp)) != -1) {
         if (first_line) {
             for (i = 0; i < read; i++) {
@@ -741,7 +737,7 @@ PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
 PyObject * kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
                       PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
     return kmeans2(k, num_of_lines, dim, centroids_py,
-            points_to_cluster_py, centroids_length, points_to_cluster_length);
+                   points_to_cluster_py, centroids_length, points_to_cluster_length);
 }
 
 void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
@@ -793,5 +789,3 @@ void assert_fp(FILE * fp) {
     }
 
 }
-
-
