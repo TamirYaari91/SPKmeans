@@ -3,7 +3,11 @@
 
 #define PY_SSIZE_T_CLEAN
 
+#include <python2.7/Python.h>
+
+/*
 #include <Python.h>
+*/
 /*
 #include <python3.7/Python.h>
 */
