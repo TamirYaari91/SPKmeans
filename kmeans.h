@@ -118,7 +118,12 @@ double *cluster_mean(int cluster, const int *c2p, const double *p2c, int k, int 
             p_val = *(p2c + p_index * (k + 1) + i);
             val += p_val;
         }
-        center[i] = val / size;
+        if (size > 0) {
+            center[i] = val / size;
+        }
+        else {
+            center[i] = 0.0;
+        }
         size = 0;
         val = 0.0;
     }
