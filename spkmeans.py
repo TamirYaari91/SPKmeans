@@ -3,6 +3,14 @@ import numpy as np
 import pandas as pd
 import myspkmeans
 
+
+def pad(x):
+    if x >= 0:
+        return str(x) + (6 - len(str(x))) * "0"
+    else:
+        return str(x) + (7 - len(str(x))) * "0"
+
+
 try:
     k = int(sys.argv[1])
     if k < 0:
@@ -35,9 +43,14 @@ except IndexError:
 data = myspkmeans.fit(filename, goal, k)
 if goal != "spk":
     exit()
-
+# print(data)
+# print("----")
 df = pd.DataFrame(data)
+# print(df)
+# print("---")
 dim = len(df.columns)
+# print("dim = ",dim)
+# print("----")
 k = dim
 df['cluster'] = -1.0
 points_to_cluster_init = df.to_numpy().flatten().tolist()
@@ -86,4 +99,4 @@ centroids = np.array_split(centroids, k)
 centroids = [centroids[i].tolist() for i in range(len(centroids))]
 
 for cent in centroids:
-    print(','.join(str(val) for val in cent))
+    print(','.join(pad(val) for val in cent))
