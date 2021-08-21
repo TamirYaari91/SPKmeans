@@ -136,7 +136,6 @@ PyObject *spkmeans(char *filename, char *goal, int k, int source) { /*source == 
         U = gen_mat_k_eigenvectors(N, k, eigen_items);
         normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
 
-
         free_mat(W);
         free_mat(D);
         free_mat(V);
@@ -657,21 +656,6 @@ double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
     }
     return U;
 }
-
-/*void normalize_mat(double **U, int N, int k) {
-    int i, j;
-    for (i = 0; i < k; i++) {
-        double norm;
-        norm = 0;
-        for (j = 0; j < N; j++) {
-            norm += pow(U[j][i], 2);
-        }
-        norm = pow(norm, 0.5);
-        for (j = 0; j < N; j++) {
-            U[j][i] = U[j][i] / norm;
-        }
-    }
-}*/
 
 void normalize_mat(double **U, int N, int k) {
     int i, j;
