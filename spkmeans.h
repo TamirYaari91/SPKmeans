@@ -7,7 +7,7 @@
 #include <Python.h>
 */
 
-/*#include <python3.7/Python.h>*/
+#include <python3.7/Python.h>
 
 
 
@@ -58,9 +58,9 @@ double **jacobi(double **, int);
 
 void multi_mat(double **, double **, int);*/
 
-void swap(eigen *, eigen *);
+void merge(eigen *, int, int, int);
 
-void eigen_bubble_sort(eigen *, int);
+void mergeSort(eigen *, int, int);
 
 double *get_diag(double **, int);
 
