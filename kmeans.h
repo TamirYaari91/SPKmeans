@@ -1,6 +1,9 @@
 #ifndef UNTITLED10_KMEANS_H
 #define UNTITLED10_KMEANS_H
 
+#include "spkmeans.h"
+
+
 double distance(const double[], const double *, int, int);
 
 void set_cluster(int, int, double *, double *);
@@ -18,9 +21,11 @@ int kmeans(double **T, int k, int N) {
     int i, j, iters, max_iter = 300;
 
     centroids = (double *) malloc(k * (k + 1) * sizeof(double));
-    assert(centroids);
+    assert_double_arr(centroids);
+    /*assert(centroids);*/
     points_to_cluster = (double *) malloc(N * (k + 1) * sizeof(double));
-    assert(points_to_cluster);
+    assert_double_arr(points_to_cluster);
+    /*assert(points_to_cluster);*/
     for (i = 0; i < N * (k + 1); ++i) {
         points_to_cluster[i] = 0.0;
     }
@@ -87,7 +92,8 @@ void set_cluster(int p_index, int k, double *point_to_cluster, double *centroids
     int min_index = 0;
     double *distances;
     distances = (double *) malloc(k * sizeof(double));
-    assert(distances);
+    assert_double_arr(distances);
+    /*assert(distances);*/
 
     for (i = 0; i < k; ++i) {
         distances[i] = distance((point_to_cluster + p_index * (k + 1)), centroids, i, k);
@@ -105,7 +111,8 @@ double *cluster_mean(int cluster, const int *c2p, const double *p2c, int k, int 
     int i, j;
     static double *center;
     center = (double *) malloc(k * sizeof(double));
-    assert(center);
+    assert_double_arr(center);
+    /*assert(center);*/
     size = 0;
     val = 0.0;
     for (i = 0; i < k; ++i) {
@@ -134,7 +141,8 @@ int update_centroids(int k, int num_of_points, double *p2c, double *centroids) {
     int *c2p;
     int i, j, changed;
     c2p = (int *) malloc(k * num_of_points * sizeof(int));
-    assert(c2p);
+    assert_int_arr(c2p);
+    /*assert(c2p);*/
 
     for (i = 0; i < k; ++i) {
         for (j = 0; j < num_of_points; ++j) {

@@ -7,9 +7,9 @@
 #include <Python.h>
 */
 
+/*
 #include <python3.7/Python.h>
-
-
+*/
 
 typedef struct {
     double value;
@@ -18,7 +18,7 @@ typedef struct {
 
 int kmeans(double **, int, int);
 
-PyObject * spkmeans(char* , char*, int, int);
+double **spkmeans_C(char* , char*, int, int);
 
 double **wam(double **, int, int);
 
@@ -80,9 +80,11 @@ double ** get_mat_from_file(char *, int, int);
 
 void free_mat (double **);
 
+/*
 PyObject *mat_to_Python_mat(double **mat, int, int);
 
 PyObject * kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
+*/
 
 void V_multi_P(double **, double, double, int, int, int);
 
