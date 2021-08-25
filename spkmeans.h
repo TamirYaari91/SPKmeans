@@ -16,9 +16,9 @@ typedef struct {
     double *vector;
 } eigen;
 
-int kmeans(double **, int, int);
+void kmeans(double **, int, int);
 
-double **spkmeans_C(char* , char*, int, int);
+void spkmeans_C(char* , char*, int);
 
 double **wam(double **, int, int);
 
@@ -54,10 +54,6 @@ double **gen_id_mat(int);
 
 double **jacobi(double **, int);
 
-/*double **gen_P(double, double, int, int, int);
-
-void multi_mat(double **, double **, int);*/
-
 void merge(eigen *, int, int, int);
 
 void mergeSort(eigen *, int, int);
@@ -80,12 +76,6 @@ double ** get_mat_from_file(char *, int, int);
 
 void free_mat (double **);
 
-/*
-PyObject *mat_to_Python_mat(double **mat, int, int);
-
-PyObject * kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
-*/
-
 void V_multi_P(double **, double, double, int, int, int);
 
 void assert_double_arr(const double * arr);
@@ -97,5 +87,7 @@ void assert_double_mat(double ** mat);
 void assert_eigen_arr(eigen * arr);
 
 void assert_fp(FILE * fp);
+
+void print_double(double);
 
 #endif /*UNTITLED10_SPKMEANS_H*/

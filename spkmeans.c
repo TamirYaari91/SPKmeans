@@ -1,4 +1,4 @@
-#define  _GNU_SOURCE
+#define _GNU_SOURCE
 
 /*
 #include <Python.h>
@@ -10,23 +10,15 @@
 #include <sys/types.h>
 #include "spkmeans.h"
 #include "kmeans.h"
-/*
-#include "kmeans2.h"
-*/
-
-/*
-#include <python3.7/Python.h>
-*/
 
 #define eps pow(10,-15)
 
 /*
 What's left?
 - comment the code with explanations
-- check in nova - make sure to change Python include in all relevant files!
-- compare to testers in Whatsapp group?
 - free N_dim done in all places?
-- splitting spkmeans to before and after N_dim to only go over file twice instead of 3 times
+- remove source - not needed anymore - and changes of that kind - review code in general
+- free(data_points) -> free_mat - check nothing is affected
 */
 
 
@@ -46,11 +38,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    spkmeans_C(argv[3], argv[2], k, 0);
+    spkmeans_C(argv[3], argv[2], k);
     return 0;
 }
 
-double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source == 0 -> C | source == 1 -> Python*/
+void spkmeans_C(char *filename, char *goal, int k) {
     int i, N, dim;
     int *N_dim;
     double *eigenvalues;
@@ -62,20 +54,19 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
     dim = N_dim[1];
 
     if (k >= N) {
+        free(N_dim);
         printf("Invalid Input!");
-        exit(1);
+        return;
     }
 
     if (strcmp(goal, "wam") == 0) {
         data_points = get_mat_from_file(filename, N, dim);
         W = wam(data_points, N, dim);
         print_mat(W, N, N);
-/*
         free_mat(W);
-*/
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
-        return W;
+        return;
     }
 
     if (strcmp(goal, "ddg") == 0) {
@@ -84,12 +75,10 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
         D = ddg(W, N);
         print_mat(D, N, N);
         free_mat(W);
-/*
         free_mat(D);
-*/
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
-        return D;
+        return;
     }
 
     if (strcmp(goal, "lnorm") == 0) {
@@ -98,13 +87,11 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
         D = ddg(W, N);
         lnorm(W, D, N);
         print_mat(W, N, N);
-/*
         free_mat(W);
-*/
         free_mat(D);
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
-        return W;
+        return;
     }
 
     if (strcmp(goal, "jacobi") == 0) {
@@ -120,12 +107,10 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
             free(eigenvector);
         }
         free_mat(W);
-/*
         free_mat(V);
-*/
         free(eigenvalues);
         free(N_dim);
-        return V;
+        return;
     }
 
     if (strcmp(goal, "spk") == 0) {
@@ -134,6 +119,10 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
         D = ddg(W, N);
         lnorm(W, D, N);
         V = jacobi(W, N);
+
+        /* print_mat(V,N,N); for testing*/
+        /* printf("\n---\n"); for testing*/
+
         eigenvalues = get_diag(W, N);
         eigen_items = calloc(N, sizeof(eigen));
         assert_eigen_arr(eigen_items);
@@ -150,7 +139,6 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
         }
         U = gen_mat_k_eigenvectors(N, k, eigen_items);
         normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
-
         free_mat(W);
         free_mat(D);
         free_mat(V);
@@ -159,28 +147,16 @@ double **spkmeans_C(char *filename, char *goal, int k, int source) { /*source ==
             free(eigen_items[i].vector);
         }
         free(eigen_items);
-        free(data_points);
-
-        if (source) {
-            /*res = mat_to_Python_mat(U, N, k);*/   /*converts U to Pyobject*/
-/*
-            free_mat(U);
-*/
-            free(N_dim);
-            return U;
-        } else {
-            kmeans(U, k, N);
-/*
-            free_mat(U);
-*/
-            free(N_dim);
-            return U;
-        }
+        free_mat(data_points);
+        kmeans(U, k, N);
+        free_mat(U);
+        free(N_dim);
+        return;
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
         free(N_dim);
-        exit(0);
+        return;
     }
 }
 
@@ -206,9 +182,7 @@ double **wam(double **data_points, int N, int dim) {
     W = calloc(N, sizeof(double *));
     assert_double_mat(W);
     for (i = 0; i < N; i++) {
-        W[i] = block + i * N;
-        /*W[i][i] = 0.0; */
-        /*W_ii = 0 - not needed because calloc initializes to zero?*/
+        W[i] = block + i * N; /*W[i][i] = 0.0 - not needed because calloc initializes to zero */
     }
     for (i = 0; i < N; i++) {
         while (j < N) {
@@ -223,31 +197,12 @@ double **wam(double **data_points, int N, int dim) {
     return W;
 }
 
-/*void print_mat(double **mat, int N, int dim) {
-    int row, columns;
-    for (row = 0; row < N; row++) {
-        for (columns = 0; columns < dim; columns++) {
-            printf("%.4lf", mat[row][columns]);
-            if (row < N - 1) {
-                if (columns == dim - 1) {
-                    printf("\n");
-                } else {
-                    printf(",");
-                }
-            } else {
-                if (columns != dim - 1) {
-                    printf(",");
-                }
-            }
-        }
-    }
-}*/
-
 void print_mat(double **mat, int N, int dim) {
     int row, columns;
     for (row = 0; row < N; row++) {
         for (columns = 0; columns < dim; columns++) {
-            printf("%.4f", mat[row][columns]);
+            /*printf("%.4f", mat[row][columns]);*/
+            print_double(mat[row][columns]);
             if (columns == dim - 1) {
                 printf("\n");
             } else {
@@ -257,11 +212,20 @@ void print_mat(double **mat, int N, int dim) {
     }
 }
 
+void print_double(double num) {
+    if ((num < 0) && (num > -0.00005)) {
+        printf("0.0000");
+    }
+    else {
+        printf("%.4f",num);
+    }
+}
 
 void print_row(double *row, int len) {
     int i;
     for (i = 0; i < len; i++) {
-        printf("%.4f", row[i]);
+        /*printf("%.4f", row[i]);*/
+        print_double(row[i]);
         if (i != len - 1) {
             printf(",");
         }
@@ -365,21 +329,14 @@ void A_to_A_tag(double **A, double **V, int N) {
     int i, j, r;
     int *arr_max;
     double theta, s, t, c, a_ri, a_rj, a_ii, a_jj;
-    /*
-        double **P;
-    */
 
     arr_max = max_indices_off_diag(A, N);
     i = arr_max[0];
     j = arr_max[1];
-    free(arr_max);
     theta = (A[j][j] - A[i][i]) / (2 * A[i][j]);
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-    /*    P = gen_P(s, c, i, j, N);
-        multi_mat(V, P, N);
-        free_mat(P);*/
     V_multi_P(V,s,c,N,i,j);
 
     for (r = 0; r < N; r++) {
@@ -398,6 +355,8 @@ void A_to_A_tag(double **A, double **V, int N) {
     A[i][i] = a_ii;
     A[i][j] = 0.0;
     A[j][i] = 0.0;
+
+    free(arr_max);
 }
 
 int *max_indices_off_diag(double **A, int N) {
@@ -466,9 +425,6 @@ double **gen_id_mat(int N) {
             if (i == j) {
                 I[i][j] = 1.0;
             }
-            /*                        else {
-                                        I[i][j] = 0.0;
-                                    } not needed because calloc initializes to zero?*/
         }
     }
     return I;
@@ -476,9 +432,6 @@ double **gen_id_mat(int N) {
 
 double **gen_mat(int N, int k) {
     int i;
-    /*
-            int j;
-    */
     double **M;
     double *block;
 
@@ -488,11 +441,6 @@ double **gen_mat(int N, int k) {
     assert_double_mat(M);
     for (i = 0; i < N; i++) {
         M[i] = block + i * k;
-        /*
-                        for (j = 0; j < k; j++) {
-                            M[i][j] = 0.0;
-                        } not needed because calloc initializes to zero?
-        */
     }
     return M;
 }
@@ -506,7 +454,7 @@ double **jacobi(double **A, int N) {
     iter = 0;
     max_iter = 100;
     V = gen_id_mat(N);
-    diff = 10;
+    diff = 1;
 
     while (diff > eps && iter < max_iter) {
         double off_A = off(A, N);
@@ -516,35 +464,6 @@ double **jacobi(double **A, int N) {
     }
     return V;
 }
-
-/*double **gen_P(double s, double c, int i, int j, int N) {
-    double **P;
-    P = gen_id_mat(N);
-    P[i][j] = s;
-    P[j][i] = -s;
-    P[i][i] = c;
-    P[j][j] = c;
-    return P;
-}*/
-
-/*void multi_mat(double **mat1, double **mat2, int N) {
-    int i, j, k;
-    double **res;
-    res = gen_id_mat(N);
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            res[i][j] = 0;
-            for (k = 0; k < N; k++)
-                res[i][j] += mat1[i][k] * mat2[k][j];
-        }
-    }
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            mat1[i][j] = res[i][j];
-        }
-    }
-    free_mat(res);
-}*/
 
 double *get_diag(double **mat, int N) {
     int i;
@@ -710,9 +629,8 @@ int *get_N_dim_from_file(char *filename) {
 
     fp = fopen(filename, "r");
     assert_fp(fp);
-    /*
-         calculating dim and N
-    */
+
+    /*calculating dim and N*/
     while ((read = getline(&line, &len, fp)) != -1) {
         if (first_line) {
             for (i = 0; i < read; i++) {
@@ -773,25 +691,6 @@ void free_mat(double **mat) {
     free(mat);
 }
 
-/*PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
-    Py_ssize_t i, j, rows = N, columns = dim;
-    PyObject *res = PyList_New(N);
-
-    for (i = 0; i < rows; i++) {
-        PyObject *item = PyList_New(dim);
-        for (j = 0; j < columns; j++)
-            PyList_SET_ITEM(item, j, PyFloat_FromDouble(mat[i][j]));
-        PyList_SET_ITEM(res, i, item);
-    }
-    return res;
-}*/
-/*
-PyObject * kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
-                      PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
-    return kmeans2(k, num_of_lines, dim, centroids_py,
-                   points_to_cluster_py, centroids_length, points_to_cluster_length);
-}*/
-
 void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
     /*since P is almost-diagonal, no need to perform full matrix multiplication*/
     int r;
@@ -839,5 +738,4 @@ void assert_fp(FILE * fp) {
         printf("An Error Has Occured");
         exit(0);
     }
-
 }

@@ -1,10 +1,6 @@
 #ifndef UNTITLED10_KMEANS2_H
 #define UNTITLED10_KMEANS2_H
 
-/*
-#include "spkmeans.h"
-*/
-
 
 double distance2(const double[], const double *, int, int);
 
@@ -38,7 +34,6 @@ void set_cluster2(int p_index, int k, double *point_to_cluster, double *centroid
     min_index = 0;
     distances = (double *) calloc(k, sizeof(double));
     assert_double_arr(distances);
-    /*assert(distances);*/
 
     for (i = 0; i < k; ++i) {
         distances[i] = distance2((point_to_cluster + p_index * (dim + 1)), centroids, i, dim);
@@ -57,7 +52,6 @@ double *cluster_mean2(int cluster, const int *c2p, const double *p2c, int dim, i
     static double *center;
     center = (double *) calloc(dim, sizeof(double));
     assert_double_arr(center);
-    /*assert(center);*/
     size = 0;
     val = 0.0;
 
@@ -90,7 +84,6 @@ int update_centroids2(int k, int num_of_points, double *p2c, double *centroids, 
     int i, j, changed;
     c2p = (int *) calloc(k * num_of_points, sizeof(int));
     assert_int_arr(c2p);
-    /*assert(c2p);*/
 
     for (i = 0; i < k; ++i) {
         for (j = 0; j < num_of_points; ++j) {

@@ -14,7 +14,7 @@ int update_centroids(int, int, double *, double *);
 
 int equal(const double *, const double *, int);
 
-int kmeans(double **T, int k, int N) {
+void kmeans(double **T, int k, int N) {
     int changed, cnt;
     double *centroids;
     double *points_to_cluster;
@@ -22,10 +22,8 @@ int kmeans(double **T, int k, int N) {
 
     centroids = (double *) malloc(k * (k + 1) * sizeof(double));
     assert_double_arr(centroids);
-    /*assert(centroids);*/
     points_to_cluster = (double *) malloc(N * (k + 1) * sizeof(double));
     assert_double_arr(points_to_cluster);
-    /*assert(points_to_cluster);*/
     for (i = 0; i < N * (k + 1); ++i) {
         points_to_cluster[i] = 0.0;
     }
@@ -73,7 +71,6 @@ int kmeans(double **T, int k, int N) {
     }
     free(centroids);
     free(points_to_cluster);
-    return 0;
 }
 
 double distance(const double *p, const double *centroids, int cluster, int k) {
@@ -93,7 +90,6 @@ void set_cluster(int p_index, int k, double *point_to_cluster, double *centroids
     double *distances;
     distances = (double *) malloc(k * sizeof(double));
     assert_double_arr(distances);
-    /*assert(distances);*/
 
     for (i = 0; i < k; ++i) {
         distances[i] = distance((point_to_cluster + p_index * (k + 1)), centroids, i, k);
@@ -112,7 +108,6 @@ double *cluster_mean(int cluster, const int *c2p, const double *p2c, int k, int 
     static double *center;
     center = (double *) malloc(k * sizeof(double));
     assert_double_arr(center);
-    /*assert(center);*/
     size = 0;
     val = 0.0;
     for (i = 0; i < k; ++i) {
@@ -142,7 +137,6 @@ int update_centroids(int k, int num_of_points, double *p2c, double *centroids) {
     int i, j, changed;
     c2p = (int *) malloc(k * num_of_points * sizeof(int));
     assert_int_arr(c2p);
-    /*assert(c2p);*/
 
     for (i = 0; i < k; ++i) {
         for (j = 0; j < num_of_points; ++j) {

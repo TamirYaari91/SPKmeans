@@ -3,9 +3,6 @@
 #include <Python.h>
 #include <math.h>
 #include "spkmeans.h"
-/*
-#include "kmeans.h"
-*/
 #include "kmeans2.h"
 
 #define FUNC(_flag, _name, _docstring) { #_name, (PyCFunction)_name, _flag, PyDoc_STR(_docstring) }
@@ -13,12 +10,13 @@
 
 static PyObject *mat_to_Python_mat(double **mat, int, int); /*not sure if needs to be static or not*/
 
+/*
 static PyObject *kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
+*/
 
-static PyObject *spkmeans_Python(char *, char *, int, int);
+static PyObject *spkmeans_Python(char *, char *, int);
 
-static PyObject *kmeans2(int, int, int, PyObject *,
-                         PyObject *, int, int);
+static PyObject *kmeans2(int, int, int, PyObject *, PyObject *, int, int);
 
 static PyObject *fit(PyObject *, PyObject *);
 
@@ -46,7 +44,7 @@ initmyspkmeans(void) {
     Py_InitModule3("myspkmeans",capiMethods,"bla");
 }*/
 
-static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source) { /*source == 0 -> C | source == 1 -> Python*/
+static PyObject * spkmeans_Python(char *filename, char *goal, int k) {
     int i, N, dim;
     int *N_dim;
     double *eigenvalues;
@@ -61,6 +59,7 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
 
     if (k >= N) {
         printf("Invalid Input!");
+        free(N_dim);
         return res;
     }
 
@@ -69,7 +68,7 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
         W = wam(data_points, N, dim);
         print_mat(W, N, N);
         free_mat(W);
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
         return res;
     }
@@ -81,7 +80,7 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
         print_mat(D, N, N);
         free_mat(W);
         free_mat(D);
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
         return res;
     }
@@ -94,7 +93,7 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
         print_mat(W, N, N);
         free_mat(W);
         free_mat(D);
-        free(data_points);
+        free_mat(data_points);
         free(N_dim);
         return res;
     }
@@ -149,19 +148,12 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
             free(eigen_items[i].vector);
         }
         free(eigen_items);
-        free(data_points);
+        free_mat(data_points);
 
-        if (source) {
-            res = mat_to_Python_mat(U, N, k);   /*converts U to Pyobject*/
-            free_mat(U);
-            free(N_dim);
-            return res;
-        } else {
-            kmeans(U, k, N);
-            free_mat(U);
-            free(N_dim);
-            return res;
-        }
+        res = mat_to_Python_mat(U, N, k);   /*converts U to Pyobject*/
+        free_mat(U);
+        free(N_dim);
+        return res;
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
@@ -172,14 +164,12 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k, int source)
 
 static PyObject *kmeans2(int k, int num_of_lines, int dim, PyObject *centroids_py,
                          PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
-
     double *centroids;
     double *points_to_cluster;
     int i, max_iter, changed, iters;
     PyObject *list;
 
     max_iter = 300;
-
     if (centroids_length < 0 || points_to_cluster_length < 0) {
         return NULL;
     }
@@ -223,11 +213,11 @@ static PyObject *kmeans2(int k, int num_of_lines, int dim, PyObject *centroids_p
 }
 
 
-static PyObject *kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
+/*static PyObject *kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
                             PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
     return kmeans2(k, num_of_lines, dim, centroids_py,
                    points_to_cluster_py, centroids_length, points_to_cluster_length);
-};
+};*/
 
 
 static PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
@@ -267,7 +257,7 @@ static PyObject *fit(PyObject *self, PyObject *args) {
 /* This builds the answer ("d" = Convert a C double to a Python floating point number) back into a python object */
     /*return Py_BuildValue("O",
                          spkmeans(filename, goal, k, 1));*/ /*  Py_BuildValue(...) returns a PyObject*  */
-    return Py_BuildValue("O", spkmeans_Python(filename, goal, k, 1));
+    return Py_BuildValue("O", spkmeans_Python(filename, goal, k));
 }
 
 static PyObject *fit2(PyObject *self, PyObject *args) {
@@ -285,7 +275,7 @@ static PyObject *fit2(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    return Py_BuildValue("O", kmeans2_py(k, num_of_lines, dim, centroids_py, points_to_cluster_py,
+    return Py_BuildValue("O", kmeans2(k, num_of_lines, dim, centroids_py, points_to_cluster_py,
                                          centroids_length, points_to_cluster_length));
 }
 

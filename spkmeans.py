@@ -43,14 +43,9 @@ except IndexError:
 data = myspkmeans.fit(filename, goal, k)
 if goal != "spk":
     exit()
-# print(data)
-# print("----")
+
 df = pd.DataFrame(data)
-# print(df)
-# print("---")
 dim = len(df.columns)
-# print("dim = ",dim)
-# print("----")
 k = dim
 df['cluster'] = -1.0
 points_to_cluster_init = df.to_numpy().flatten().tolist()
