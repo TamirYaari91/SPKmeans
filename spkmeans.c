@@ -16,9 +16,6 @@
 /*
 What's left?
 - comment the code with explanations
-- free N_dim done in all places?
-- remove source - not needed anymore - and changes of that kind - review code in general
-- free(data_points) -> free_mat - check nothing is affected
 */
 
 
