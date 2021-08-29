@@ -8,11 +8,7 @@
 #define FUNC(_flag, _name, _docstring) { #_name, (PyCFunction)_name, _flag, PyDoc_STR(_docstring) }
 
 
-static PyObject *mat_to_Python_mat(double **mat, int, int); /*not sure if needs to be static or not*/
-
-/*
-static PyObject *kmeans2_py(int, int, int, PyObject *, PyObject *, int, int);
-*/
+static PyObject *mat_to_Python_mat(double **mat, int, int);
 
 static PyObject *spkmeans_Python(char *, char *, int);
 
@@ -21,6 +17,9 @@ static PyObject *kmeans2(int, int, int, PyObject *, PyObject *, int, int);
 static PyObject *fit(PyObject *, PyObject *);
 
 static PyObject *fit2(PyObject *, PyObject *);
+
+static PyObject *spk_wrapper_Python(char*,int,int,int);
+
 
 
 static PyMethodDef capiMethods[] = {
@@ -39,17 +38,11 @@ PyInit_myspkmeans(void) {
     return PyModule_Create(&moduleDef);
 }
 
-/*PyMODINIT_FUNC
-initmyspkmeans(void) {
-    Py_InitModule3("myspkmeans",capiMethods,"bla");
-}*/
-
 static PyObject * spkmeans_Python(char *filename, char *goal, int k) {
-    int i, N, dim;
+    /*Main logic - see C comments for more comments as the code is almost identical other than the returned object*/
+
+    int N, dim;
     int *N_dim;
-    double *eigenvalues;
-    double **data_points, **W, **D, **V, **U;
-    eigen *eigen_items;
     PyObject *res;
 
     res = PyLong_FromLong(-1);
@@ -64,106 +57,82 @@ static PyObject * spkmeans_Python(char *filename, char *goal, int k) {
     }
 
     if (strcmp(goal, "wam") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        print_mat(W, N, N);
-        free_mat(W);
-        free_mat(data_points);
-        free(N_dim);
-        return res;
+        wam_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "ddg") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        print_mat(D, N, N);
-        free_mat(W);
-        free_mat(D);
-        free_mat(data_points);
-        free(N_dim);
-        return res;
+    else if (strcmp(goal, "ddg") == 0) {
+        ddg_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "lnorm") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        lnorm(W, D, N);
-        print_mat(W, N, N);
-        free_mat(W);
-        free_mat(D);
-        free_mat(data_points);
-        free(N_dim);
-        return res;
+    else if (strcmp(goal, "lnorm") == 0) {
+        lnorm_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "jacobi") == 0) {
-        W = get_mat_from_file(filename, N, N);
-        V = jacobi(W, N);
-        eigenvalues = get_diag(W, N);
-        print_row(eigenvalues, N);
-        printf("\n");
-        for (i = 0; i < N; i++) {
-            double *eigenvector = get_ith_column(V, i, N);
-            print_row(eigenvector, N);
-            printf("\n");
-            free(eigenvector);
-        }
-        free_mat(W);
-        free_mat(V);
-        free(eigenvalues);
-        free(N_dim);
-        return res;
+    else if (strcmp(goal, "jacobi") == 0) {
+        jacobi_wrapper(filename,N);
     }
 
-    if (strcmp(goal, "spk") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        lnorm(W, D, N);
-        V = jacobi(W, N);
-        eigenvalues = get_diag(W, N);
-        eigen_items = calloc(N, sizeof(eigen));
-        assert_eigen_arr(eigen_items);
-        for (i = 0; i < N; i++) {
-            double *eigenvector = get_ith_column(V, i, N);
-            eigen item;
-            item.value = eigenvalues[i];
-            item.vector = eigenvector;
-            eigen_items[i] = item;
-        }
-        mergeSort(eigen_items, 0, N - 1);
-        if (k == 0) {
-            k = eigen_gap(eigen_items, N);
-        }
-        U = gen_mat_k_eigenvectors(N, k, eigen_items);
-        normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
-
-        free_mat(W);
-        free_mat(D);
-        free_mat(V);
-        free(eigenvalues);
-        for (i = 0; i < N; i++) {
-            free(eigen_items[i].vector);
-        }
-        free(eigen_items);
-        free_mat(data_points);
-
-        res = mat_to_Python_mat(U, N, k);   /*converts U to Pyobject*/
-        free_mat(U);
+    else if (strcmp(goal, "spk") == 0) {
+        res = spk_wrapper_Python(filename,N,dim,k);
         free(N_dim);
         return res;
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
-        free(N_dim);
-        return res;
     }
+    free(N_dim);
+    return res;
 };
+
+static PyObject * spk_wrapper_Python(char* filename,int N,int dim, int k) {
+    /*wrapper for goal == spk - gets data points from file and calculates wam according to given logic*/
+    double **data_points, **W, **V, **D, **U;
+    double *eigenvalues;
+    int i;
+    eigen *eigen_items; /*struct containing eigen value paired to its respective eigen vector*/
+    PyObject * res;
+
+    data_points = get_mat_from_file(filename, N, dim);
+    W = wam(data_points, N, dim);
+    D = ddg(W, N);
+    lnorm(W, D, N);
+    V = jacobi(W, N);
+
+    eigenvalues = get_diag(W, N);
+    eigen_items = calloc(N, sizeof(eigen));
+    assert_eigen_arr(eigen_items);
+    for (i = 0; i < N; i++) { /*loop creates eigen_items with the repsective value and vector*/
+        double *eigenvector = get_ith_column(V, i, N);
+        eigen item;
+        item.value = eigenvalues[i];
+        item.vector = eigenvector;
+        eigen_items[i] = item;
+    }
+    mergeSort(eigen_items,0,N-1); /*sorting the eigen_items according to eigen values - using mergeSort since it
+    is stable and O(nlogn) WC*/
+    if (k == 0) {
+        k = eigen_gap(eigen_items, N); /*if k == 0 then Eigengap Heuristic is used, as instructed*/
+    }
+    U = gen_mat_k_eigenvectors(N, k, eigen_items); /*creates U using the first k eigenvectors - u1,...,uk*/
+    normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
+    free_mat(W);
+    free_mat(D);
+    free_mat(V);
+    free(eigenvalues);
+    for (i = 0; i < N; i++) {
+        free(eigen_items[i].vector);
+    }
+    free(eigen_items);
+    free_mat(data_points);
+    res = mat_to_Python_mat(U, N, k);   /*converts T (still called U) to Pyobject*/
+    free_mat(U);
+    return res; /*Returns T as a Python object to be used in initial KMeans++ logic in Python*/
+}
 
 static PyObject *kmeans2(int k, int num_of_lines, int dim, PyObject *centroids_py,
                          PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
+    /*KMeans algorithm taken as is from EX2*/
+
     double *centroids;
     double *points_to_cluster;
     int i, max_iter, changed, iters;
@@ -212,15 +181,9 @@ static PyObject *kmeans2(int k, int num_of_lines, int dim, PyObject *centroids_p
     return list;
 }
 
-
-/*static PyObject *kmeans2_py(int k, int num_of_lines, int dim, PyObject *centroids_py,
-                            PyObject *points_to_cluster_py, int centroids_length, int points_to_cluster_length) {
-    return kmeans2(k, num_of_lines, dim, centroids_py,
-                   points_to_cluster_py, centroids_length, points_to_cluster_length);
-};*/
-
-
 static PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
+    /*converts a C matrix of doubles to a matrix of PyObjects*/
+
     Py_ssize_t i, j, rows, columns;
     PyObject *res;
 
@@ -237,30 +200,24 @@ static PyObject *mat_to_Python_mat(double **mat, int N, int dim) {
     return res;
 };
 
-/*
- * This actually defines the geo function using a wrapper C API function
- * The wrapping function needs a PyObject* self argument.
- * This is a requirement for all functions and methods in the C API.
- * It has input PyObject *args from Python.
- */
+
 static PyObject *fit(PyObject *self, PyObject *args) {
+    /*gets filename, goal and k as an input and runs the main algorithm logic*/
+
     char *filename;
     char *goal;
     int k;
 
-    /* This parses the Python arguments into a double (d)  variable named z and int (i) variable named n*/
     if (!PyArg_ParseTuple(args, "ssi:fit", &filename, &goal, &k)) {
-        return NULL; /* In the CPython API, a NULL value is never valid for a
-                        PyObject* so it is used to signal that an error has occurred. */
+        return NULL;
     }
 
-/* This builds the answer ("d" = Convert a C double to a Python floating point number) back into a python object */
-    /*return Py_BuildValue("O",
-                         spkmeans(filename, goal, k, 1));*/ /*  Py_BuildValue(...) returns a PyObject*  */
     return Py_BuildValue("O", spkmeans_Python(filename, goal, k));
 }
 
 static PyObject *fit2(PyObject *self, PyObject *args) {
+    /*if goal == spk, T matrix was processed in Python with KMeans++ logic and output is used by kmeans*/
+
     int k;
     int num_of_lines;
     int dim;
@@ -278,10 +235,3 @@ static PyObject *fit2(PyObject *self, PyObject *args) {
     return Py_BuildValue("O", kmeans2(k, num_of_lines, dim, centroids_py, points_to_cluster_py,
                                          centroids_length, points_to_cluster_length));
 }
-
-/*
- * This array tells Python what methods this module has.
- * We will use it in the next structure
- */
-
-

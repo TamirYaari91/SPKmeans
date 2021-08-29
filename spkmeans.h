@@ -3,14 +3,6 @@
 
 #define PY_SSIZE_T_CLEAN
 
-/*
-#include <Python.h>
-*/
-
-/*
-#include <python3.7/Python.h>
-*/
-
 typedef struct {
     double value;
     double *vector;
@@ -36,9 +28,9 @@ double sum_row(const double *, int);
 
 void diag_mat_pow_half(double **, int);
 
-void diag_mat_multi_reg_mat(double **, double **, int); /*result mat is W - the reg mat - the second mat!*/
+void diag_mat_multi_reg_mat(double **, double **, int);
 
-void reg_mat_multi_diag_mat(double **, double **, int); /*result mat is W - the reg mat - the second mat!*/
+void reg_mat_multi_diag_mat(double **, double **, int);
 
 void identity_minus_reg_mat(double **, int);
 
@@ -89,5 +81,19 @@ void assert_eigen_arr(eigen * arr);
 void assert_fp(FILE * fp);
 
 void print_double(double);
+
+void wam_wrapper(char*,int,int);
+
+void ddg_wrapper(char*,int,int);
+
+void lnorm_wrapper(char*,int,int);
+
+void jacobi_wrapper(char*,int);
+
+void spk_wrapper(char*,int,int,int);
+
+
+
+
 
 #endif /*UNTITLED10_SPKMEANS_H*/

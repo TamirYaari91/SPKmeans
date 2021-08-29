@@ -44,22 +44,22 @@ data = myspkmeans.fit(filename, goal, k)
 if goal != "spk":
     exit()
 
-df = pd.DataFrame(data)
-dim = len(df.columns)
+# Initializing structure as in EX2 - removed Pandas for faster running time
+np_mat = np.array(data)
+num_of_points, dim = np_mat.shape
 k = dim
-df['cluster'] = -1.0
-points_to_cluster_init = df.to_numpy().flatten().tolist()
-del df['cluster']
+np_cluster = np.full((num_of_points, 1), -1.0)
+np_mat = np.append(np_mat, np_cluster, axis=1)
+points_to_cluster_init = np_mat.flatten().tolist()
+np_mat = np.delete(np_mat, dim, 1)
+np_df = np_mat
+np_dp = np.full((num_of_points, 2), np.nan)
+np_mat = np.append(np_mat, np_dp, axis=1)
+np_df_ext = np_mat
 
-np_df = df.to_numpy()
-num_of_points = len(np_df)
-
-df['d'] = np.nan
-df['p'] = np.nan
-np_df_ext = df.to_numpy()
-
+# Identical to EX2 from here
 np.random.seed(0)
-rand_start = np.random.randint(0, (len(df) - 1))
+rand_start = np.random.randint(0, (num_of_points - 1))
 centroids_df_indices = [rand_start]
 z = 1
 

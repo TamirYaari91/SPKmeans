@@ -13,12 +13,6 @@
 
 #define eps pow(10,-15)
 
-/*
-What's left?
-- comment the code with explanations
-*/
-
-
 
 int main(int argc, char *argv[]) {
     int k;
@@ -40,11 +34,9 @@ int main(int argc, char *argv[]) {
 }
 
 void spkmeans_C(char *filename, char *goal, int k) {
-    int i, N, dim;
+    /*Main algorithms driver method - activates functions according to the goal, k and filename as entered*/
+    int N, dim;
     int *N_dim;
-    double *eigenvalues;
-    double **data_points, **W, **D, **V, **U;
-    eigen *eigen_items;
 
     N_dim = get_N_dim_from_file(filename);
     N = N_dim[0];
@@ -57,107 +49,137 @@ void spkmeans_C(char *filename, char *goal, int k) {
     }
 
     if (strcmp(goal, "wam") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        print_mat(W, N, N);
-        free_mat(W);
-        free_mat(data_points);
-        free(N_dim);
-        return;
+        wam_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "ddg") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        print_mat(D, N, N);
-        free_mat(W);
-        free_mat(D);
-        free_mat(data_points);
-        free(N_dim);
-        return;
+    else if (strcmp(goal, "ddg") == 0) {
+        ddg_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "lnorm") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        lnorm(W, D, N);
-        print_mat(W, N, N);
-        free_mat(W);
-        free_mat(D);
-        free_mat(data_points);
-        free(N_dim);
-        return;
+    else if (strcmp(goal, "lnorm") == 0) {
+        lnorm_wrapper(filename,N,dim);
     }
 
-    if (strcmp(goal, "jacobi") == 0) {
-        W = get_mat_from_file(filename, N, N);
-        V = jacobi(W, N);
-        eigenvalues = get_diag(W, N);
-        print_row(eigenvalues, N);
-        printf("\n");
-        for (i = 0; i < N; i++) {
-            double *eigenvector = get_ith_column(V, i, N);
-            print_row(eigenvector, N);
-            printf("\n");
-            free(eigenvector);
-        }
-        free_mat(W);
-        free_mat(V);
-        free(eigenvalues);
-        free(N_dim);
-        return;
+    else if (strcmp(goal, "jacobi") == 0) {
+        jacobi_wrapper(filename,N);
     }
 
-    if (strcmp(goal, "spk") == 0) {
-        data_points = get_mat_from_file(filename, N, dim);
-        W = wam(data_points, N, dim);
-        D = ddg(W, N);
-        lnorm(W, D, N);
-        V = jacobi(W, N);
-
-        /* print_mat(V,N,N); for testing*/
-        /* printf("\n---\n"); for testing*/
-
-        eigenvalues = get_diag(W, N);
-        eigen_items = calloc(N, sizeof(eigen));
-        assert_eigen_arr(eigen_items);
-        for (i = 0; i < N; i++) {
-            double *eigenvector = get_ith_column(V, i, N);
-            eigen item;
-            item.value = eigenvalues[i];
-            item.vector = eigenvector;
-            eigen_items[i] = item;
-        }
-        mergeSort(eigen_items,0,N-1);
-        if (k == 0) {
-            k = eigen_gap(eigen_items, N);
-        }
-        U = gen_mat_k_eigenvectors(N, k, eigen_items);
-        normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
-        free_mat(W);
-        free_mat(D);
-        free_mat(V);
-        free(eigenvalues);
-        for (i = 0; i < N; i++) {
-            free(eigen_items[i].vector);
-        }
-        free(eigen_items);
-        free_mat(data_points);
-        kmeans(U, k, N);
-        free_mat(U);
-        free(N_dim);
-        return;
+    else if (strcmp(goal, "spk") == 0) {
+        spk_wrapper(filename,N,dim,k);
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
-        free(N_dim);
-        return;
     }
+    free(N_dim);
 }
 
+void wam_wrapper(char* filename,int N,int dim) {
+    /*wrapper for goal == wam - gets data points from file and calculates wam according to given logic*/
+    double **data_points, **W;
+
+    data_points = get_mat_from_file(filename, N, dim);
+    W = wam(data_points, N, dim);
+    print_mat(W, N, N);
+    free_mat(W);
+    free_mat(data_points);
+}
+
+void ddg_wrapper(char* filename,int N,int dim) {
+    /*wrapper for goal == ddg - gets data points from file and calculates wam according to given logic*/
+    double **data_points, **W, **D;
+
+    data_points = get_mat_from_file(filename, N, dim);
+    W = wam(data_points, N, dim);
+    D = ddg(W, N);
+    print_mat(D, N, N);
+    free_mat(W);
+    free_mat(D);
+    free_mat(data_points);
+}
+
+void lnorm_wrapper(char* filename,int N,int dim) {
+    /*wrapper for goal == lnorm - gets data points from file and calculates wam according to given logic*/
+    double **data_points, **W, **D;
+
+    data_points = get_mat_from_file(filename, N, dim);
+    W = wam(data_points, N, dim);
+    D = ddg(W, N);
+    lnorm(W, D, N);
+    print_mat(W, N, N);
+    free_mat(W);
+    free_mat(D);
+    free_mat(data_points);
+}
+
+void jacobi_wrapper(char* filename,int N) {
+    /*wrapper for goal == jacobi - gets data points from file and calculates wam according to given logic*/
+    double **W, **V;
+    double *eigenvalues;
+    int i;
+
+    W = get_mat_from_file(filename, N, N);
+    V = jacobi(W, N);
+    eigenvalues = get_diag(W, N);
+    print_row(eigenvalues, N);
+    printf("\n");
+    for (i = 0; i < N; i++) {
+        double *eigenvector = get_ith_column(V, i, N);
+        print_row(eigenvector, N);
+        printf("\n");
+        free(eigenvector);
+    }
+    free_mat(W);
+    free_mat(V);
+    free(eigenvalues);
+}
+
+void spk_wrapper(char* filename,int N,int dim, int k) {
+    /*wrapper for goal == spk - gets data points from file and calculates wam according to given logic*/
+    double **data_points, **W, **V, **D, **U;
+    double *eigenvalues;
+    int i;
+    eigen *eigen_items; /*struct containing eigen value paired to its respective eigen vector*/
+
+    data_points = get_mat_from_file(filename, N, dim);
+    W = wam(data_points, N, dim);
+    D = ddg(W, N);
+    lnorm(W, D, N);
+    V = jacobi(W, N);
+
+    eigenvalues = get_diag(W, N);
+    eigen_items = calloc(N, sizeof(eigen));
+    assert_eigen_arr(eigen_items);
+    for (i = 0; i < N; i++) { /*loop creates eigen_items with the repsective value and vector*/
+        double *eigenvector = get_ith_column(V, i, N);
+        eigen item;
+        item.value = eigenvalues[i];
+        item.vector = eigenvector;
+        eigen_items[i] = item;
+    }
+    mergeSort(eigen_items,0,N-1); /*sorting the eigen_items according to eigen values - using mergeSort since it
+    is stable and O(nlogn) WC*/
+    if (k == 0) {
+        k = eigen_gap(eigen_items, N); /*if k == 0 then Eigengap Heuristic is used, as instructed*/
+    }
+    U = gen_mat_k_eigenvectors(N, k, eigen_items); /*creates U using the first k eigenvectors - u1,...,uk*/
+    normalize_mat(U, N, k); /*T - which is U after it was normalized - is of size N*k*/
+    free_mat(W);
+    free_mat(D);
+    free_mat(V);
+    free(eigenvalues);
+    for (i = 0; i < N; i++) {
+        free(eigen_items[i].vector);
+    }
+    free(eigen_items);
+    free_mat(data_points);
+    kmeans(U, k, N); /*KMeans from EX1*/
+    free_mat(U);
+}
+
+
+
 double norm(double *p1, double *p2, int dim) {
+    /*calculates Euclidean distance between p1 and p2 - both points in R^dim*/
     int i;
     double res, sum;
     sum = 0;
@@ -169,18 +191,12 @@ double norm(double *p1, double *p2, int dim) {
 }
 
 double **wam(double **data_points, int N, int dim) {
+    /*Calculates and prints the Weighted Adjacency Matrix*/
     int i, j;
     double **W;
-    double *block;
 
     j = 0;
-    block = calloc(N * N, sizeof(double));
-    assert_double_arr(block);
-    W = calloc(N, sizeof(double *));
-    assert_double_mat(W);
-    for (i = 0; i < N; i++) {
-        W[i] = block + i * N; /*W[i][i] = 0.0 - not needed because calloc initializes to zero */
-    }
+    W = gen_mat(N,N);
     for (i = 0; i < N; i++) {
         while (j < N) {
             if (i != j) {
@@ -195,10 +211,10 @@ double **wam(double **data_points, int N, int dim) {
 }
 
 void print_mat(double **mat, int N, int dim) {
+    /*Prints matrix according to given dimensions: N == number of rows, dim == number of columns*/
     int row, columns;
     for (row = 0; row < N; row++) {
         for (columns = 0; columns < dim; columns++) {
-            /*printf("%.4f", mat[row][columns]);*/
             print_double(mat[row][columns]);
             if (columns == dim - 1) {
                 printf("\n");
@@ -210,6 +226,7 @@ void print_mat(double **mat, int N, int dim) {
 }
 
 void print_double(double num) {
+    /*Prevents "-0.0000" situation*/
     if ((num < 0) && (num > -0.00005)) {
         printf("0.0000");
     }
@@ -219,9 +236,9 @@ void print_double(double num) {
 }
 
 void print_row(double *row, int len) {
+    /*Prints array (row) according to given dimension: len == number of items*/
     int i;
     for (i = 0; i < len; i++) {
-        /*printf("%.4f", row[i]);*/
         print_double(row[i]);
         if (i != len - 1) {
             printf(",");
@@ -230,37 +247,31 @@ void print_row(double *row, int len) {
 }
 
 double **ddg(double **wam_mat, int N) {
+    /*Calculates and outputs the Diagonal Degree Matrix*/
     int i, j;
     double **D;
-    double *block;
 
-    block = calloc(N * N, sizeof(double));
-    assert_double_arr(block);
-    D = calloc(N, sizeof(double *));
-    assert_double_mat(D);
+    D = gen_mat(N,N);
     for (i = 0; i < N; i++) {
-        D[i] = block + i * N;
         for (j = 0; j < N; j++) {
             if (i == j) {
                 D[i][j] = sum_row(wam_mat[i], N);
             }
-            /*                        else {
-                                        D[i][j] = 0.0;
-                                    } not needed because calloc initializes to zero?*/
         }
     }
     return D;
 }
 
 void lnorm(double **W, double **D, int N) {
-    diag_mat_pow_half(D, N);
-    diag_mat_multi_reg_mat(D, W, N);
-    reg_mat_multi_diag_mat(D, W, N);
-    identity_minus_reg_mat(W, N);
-
+    /*Performs W = I -D^0.5*W*D^0.5*/
+    diag_mat_pow_half(D, N); /*D = D^0.5*/
+    diag_mat_multi_reg_mat(D, W, N); /*W = DW*/
+    reg_mat_multi_diag_mat(D, W, N); /*W = WD*/
+    identity_minus_reg_mat(W, N); /*W = I -W*/
 }
 
 double sum_row(const double *mat, int m) {
+    /*Sums up values in double array (row) of size m*/
     int i;
     double res;
     res = 0;
@@ -281,7 +292,9 @@ void diag_mat_pow_half(double **mat, int N) {
     }
 }
 
-void diag_mat_multi_reg_mat(double **D, double **W, int N) { /*result mat is W - the reg mat - the second mat!*/
+void diag_mat_multi_reg_mat(double **D, double **W, int N) {
+    /*W = DW*/
+    /*result mat is W - the reg mat - the second mat!*/
     int i, j;
     double d_ii;
 
@@ -294,6 +307,7 @@ void diag_mat_multi_reg_mat(double **D, double **W, int N) { /*result mat is W -
 }
 
 void reg_mat_multi_diag_mat(double **D, double **W, int N) { /*result mat is W - the reg mat - the second mat!*/
+    /*W = WD*/
     int i, j;
     double *D_diag;
     D_diag = calloc(N, sizeof(double));
@@ -310,6 +324,7 @@ void reg_mat_multi_diag_mat(double **D, double **W, int N) { /*result mat is W -
 }
 
 void identity_minus_reg_mat(double **mat, int N) {
+    /*W = I-W*/
     int i, j;
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
@@ -323,18 +338,19 @@ void identity_minus_reg_mat(double **mat, int N) {
 }
 
 void A_to_A_tag(double **A, double **V, int N) {
+    /*Calculates A' from A using the relation between them as explained in 1.2.6*/
     int i, j, r;
     int *arr_max;
     double theta, s, t, c, a_ri, a_rj, a_ii, a_jj;
 
-    arr_max = max_indices_off_diag(A, N);
+    arr_max = max_indices_off_diag(A, N); /*Finding pivot - 1.2.3*/
     i = arr_max[0];
     j = arr_max[1];
     theta = (A[j][j] - A[i][i]) / (2 * A[i][j]);
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-    V_multi_P(V,s,c,N,i,j);
+    V_multi_P(V,s,c,N,i,j); /*V = VP*/
 
     for (r = 0; r < N; r++) {
         if ((r != j) && (r != i)) {
@@ -346,6 +362,7 @@ void A_to_A_tag(double **A, double **V, int N) {
             A[i][r] = a_ri;
         }
     }
+    /*1.2.3*/
     a_ii = pow(c, 2) * A[i][i] + pow(s, 2) * A[j][j] - 2 * s * c * A[i][j];
     a_jj = pow(c, 2) * A[j][j] + pow(s, 2) * A[i][i] + 2 * s * c * A[i][j];
     A[j][j] = a_jj;
@@ -357,6 +374,7 @@ void A_to_A_tag(double **A, double **V, int N) {
 }
 
 int *max_indices_off_diag(double **A, int N) {
+    /*returns [i,j] so that A[i][j] is the off-diagonal largest absolute element in A*/
     double val;
     int i, j, max_i, max_j;
     int *arr;
@@ -393,6 +411,7 @@ int sign(double num) {
 }
 
 double off(double **A, int N) {
+    /*Calculates Off(A)^2*/
     int i, j;
     double res;
 
@@ -408,6 +427,7 @@ double off(double **A, int N) {
 }
 
 double **gen_id_mat(int N) {
+    /*Generates ID matrix*/
     int i, j;
     double **I;
     double *block;
@@ -428,6 +448,7 @@ double **gen_id_mat(int N) {
 }
 
 double **gen_mat(int N, int k) {
+    /*Generates Nxk matrix of zeroes*/
     int i;
     double **M;
     double *block;
@@ -444,6 +465,7 @@ double **gen_mat(int N, int k) {
 
 
 double **jacobi(double **A, int N) {
+    /*Calculates and prints the eigenvalues and eigenvectors as described in 1.2.1*/
     int iter, max_iter;
     double diff;
     double **V;
@@ -453,16 +475,17 @@ double **jacobi(double **A, int N) {
     V = gen_id_mat(N);
     diff = 1;
 
-    while (diff > eps && iter < max_iter) {
+    while (diff > eps && iter < max_iter) { /*Stops when off(A)^2- - off(A')^2 <= epsilon OR 100 iterations*/
         double off_A = off(A, N);
         iter++;
-        A_to_A_tag(A, V, N);
+        A_to_A_tag(A, V, N); /*Also change V during A->A' iteration so that eventually V = P1*P2*P3*...*/
         diff = off_A - off(A, N);
     }
     return V;
 }
 
 double *get_diag(double **mat, int N) {
+    /*returns [mat[0][0],mat[1][1],...,mat[N-1][N-1]]*/
     int i;
     double *diag;
     diag = calloc(N, sizeof(double));
@@ -475,6 +498,7 @@ double *get_diag(double **mat, int N) {
 }
 
 double *get_ith_column(double **mat, int col_ind, int N) {
+    /*returns [mat[0][col_ind],mat[1][col_ind],...,mat[N-1][col_ind]]*/
     int i;
     double *col;
     col = calloc(N, sizeof(double));
@@ -562,6 +586,7 @@ void mergeSort(eigen * arr, int l, int r) {
 }
 
 int eigen_gap(eigen *eigen_items, int N) {
+    /*Calculates k using Eigangap Heuristic*/
     int i, k;
     double lambda_i, max_diff;
 
@@ -575,11 +600,12 @@ int eigen_gap(eigen *eigen_items, int N) {
             k = i;
         }
     }
-    k += 1;
+    k += 1; /*Adjust index*/
     return k;
 }
 
 double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
+    /*Creates Nxk using the first k eigenvectors as columns - as described in step 4 of the algorithm*/
     int i, j;
     double **U;
     U = gen_mat(N, k);
@@ -593,6 +619,7 @@ double **gen_mat_k_eigenvectors(int N, int k, eigen *eigen_items) {
 }
 
 void normalize_mat(double **U, int N, int k) {
+    /*Normalizes Nxk matrix  - as described in step 5 of the algorithm*/
     int i, j;
     for (i = 0; i < N; i++) {
         double norm;
@@ -608,6 +635,7 @@ void normalize_mat(double **U, int N, int k) {
 }
 
 int *get_N_dim_from_file(char *filename) {
+    /*Goes over the file once to retrieve N == number of rows and dim == number of columns in file matrix*/
     int i, N, dim, first_line;
     char *line;
     int *res;
@@ -650,6 +678,7 @@ int *get_N_dim_from_file(char *filename) {
 }
 
 double **get_mat_from_file(char *filename, int N, int dim) {
+    /*Using calculated N,dim goes over file to retrieve the matrix itself*/
     double n1;
     char c;
     int i, j;
@@ -684,12 +713,13 @@ double **get_mat_from_file(char *filename, int N, int dim) {
 }
 
 void free_mat(double **mat) {
+    /*Since the matrices are allocated as a contigous block, we first free the block of N*k size and then the pointer*/
     free(mat[0]);
     free(mat);
 }
 
 void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
-    /*since P is almost-diagonal, no need to perform full matrix multiplication*/
+    /*V = VP; since P is almost-diagonal, no need to perform full matrix multiplication*/
     int r;
     double V_ri, V_rj;
 
@@ -703,6 +733,7 @@ void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
 }
 
 void assert_double_arr(const double * arr) {
+    /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
         exit(0);
@@ -710,6 +741,7 @@ void assert_double_arr(const double * arr) {
 }
 
 void assert_int_arr(const int * arr) {
+    /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
         exit(0);
@@ -717,6 +749,7 @@ void assert_int_arr(const int * arr) {
 }
 
 void assert_double_mat(double ** mat) {
+    /*Replaces assert*/
     if (mat == NULL) {
         printf("An Error Has Occured");
         exit(0);
@@ -724,6 +757,7 @@ void assert_double_mat(double ** mat) {
 }
 
 void assert_eigen_arr(eigen * arr) {
+    /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
         exit(0);
@@ -731,6 +765,7 @@ void assert_eigen_arr(eigen * arr) {
 }
 
 void assert_fp(FILE * fp) {
+    /*Replaces assert*/
     if (fp == NULL) {
         printf("An Error Has Occured");
         exit(0);

@@ -1,6 +1,7 @@
 #ifndef UNTITLED10_KMEANS2_H
 #define UNTITLED10_KMEANS2_H
 
+/*This is basically KMeans from EX2 - to be used when SPKMeans is initiated from Python*/
 
 double distance2(const double[], const double *, int, int);
 

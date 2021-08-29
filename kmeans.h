@@ -3,6 +3,7 @@
 
 #include "spkmeans.h"
 
+/*This is basically KMeans from EX1 - to be used by SPKMeans when initiated from C*/
 
 double distance(const double[], const double *, int, int);
 
