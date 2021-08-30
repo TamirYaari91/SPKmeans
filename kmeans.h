@@ -99,6 +99,7 @@ void set_cluster(int p_index, int k, double *point_to_cluster, double *centroids
         }
     }
     point_to_cluster[(p_index * (k + 1) + k)] = min_index;
+    free(distances);
 }
 
 double *cluster_mean(int cluster, const int *c2p, const double *p2c, int k, int num_of_points) {
