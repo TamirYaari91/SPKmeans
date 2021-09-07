@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     int k;
     char *end_k;
 
-    if (argc < 3) {
+    if (argc < 4) {
         printf("Invalid Input!");
         return 0;
     }
