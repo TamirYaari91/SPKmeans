@@ -93,5 +93,11 @@ centroids = np.asarray(centroids).round(4)
 centroids = np.array_split(centroids, k)
 centroids = [centroids[i].tolist() for i in range(len(centroids))]
 
-for cent in centroids:
-    print(','.join(pad(val) for val in cent))
+# for cent in centroids:
+#     print(','.join(pad(val) for val in cent))
+
+for i in range(len(centroids)):
+    if i < len(centroids) - 1:
+        print(','.join(pad(val) for val in centroids[i]))
+    else:
+        print(','.join(pad(val) for val in centroids[i]),end='')
