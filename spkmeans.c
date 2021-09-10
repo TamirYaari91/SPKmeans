@@ -49,23 +49,15 @@ void spkmeans_C(char *filename, char *goal, int k) {
     }
 
     if (strcmp(goal, "wam") == 0) {
-        wam_wrapper(filename,N,dim);
-    }
-
-    else if (strcmp(goal, "ddg") == 0) {
-        ddg_wrapper(filename,N,dim);
-    }
-
-    else if (strcmp(goal, "lnorm") == 0) {
-        lnorm_wrapper(filename,N,dim);
-    }
-
-    else if (strcmp(goal, "jacobi") == 0) {
-        jacobi_wrapper(filename,N);
-    }
-
-    else if (strcmp(goal, "spk") == 0) {
-        spk_wrapper(filename,N,dim,k);
+        wam_wrapper(filename, N, dim);
+    } else if (strcmp(goal, "ddg") == 0) {
+        ddg_wrapper(filename, N, dim);
+    } else if (strcmp(goal, "lnorm") == 0) {
+        lnorm_wrapper(filename, N, dim);
+    } else if (strcmp(goal, "jacobi") == 0) {
+        jacobi_wrapper(filename, N);
+    } else if (strcmp(goal, "spk") == 0) {
+        spk_wrapper(filename, N, dim, k);
 
     } else { /* goal is not any of the valid options */
         printf("Invalid Input!");
@@ -73,7 +65,7 @@ void spkmeans_C(char *filename, char *goal, int k) {
     free(N_dim);
 }
 
-void wam_wrapper(char* filename,int N,int dim) {
+void wam_wrapper(char *filename, int N, int dim) {
     /*wrapper for goal == wam - gets data points from file and calculates wam according to given logic*/
     double **data_points, **W;
 
@@ -84,7 +76,7 @@ void wam_wrapper(char* filename,int N,int dim) {
     free_mat(data_points);
 }
 
-void ddg_wrapper(char* filename,int N,int dim) {
+void ddg_wrapper(char *filename, int N, int dim) {
     /*wrapper for goal == ddg - gets data points from file and calculates wam according to given logic*/
     double **data_points, **W, **D;
 
@@ -97,7 +89,7 @@ void ddg_wrapper(char* filename,int N,int dim) {
     free_mat(data_points);
 }
 
-void lnorm_wrapper(char* filename,int N,int dim) {
+void lnorm_wrapper(char *filename, int N, int dim) {
     /*wrapper for goal == lnorm - gets data points from file and calculates wam according to given logic*/
     double **data_points, **W, **D;
 
@@ -111,7 +103,7 @@ void lnorm_wrapper(char* filename,int N,int dim) {
     free_mat(data_points);
 }
 
-void jacobi_wrapper(char* filename,int N) {
+void jacobi_wrapper(char *filename, int N) {
     /*wrapper for goal == jacobi - gets data points from file and calculates wam according to given logic*/
     double **W, **V;
     double *eigenvalues;
@@ -125,7 +117,9 @@ void jacobi_wrapper(char* filename,int N) {
     for (i = 0; i < N; i++) {
         double *eigenvector = get_ith_column(V, i, N);
         print_row(eigenvector, N);
-        printf("\n");
+        if (i < N - 1) {
+            printf("\n");
+        }
         free(eigenvector);
     }
     free_mat(W);
@@ -133,7 +127,7 @@ void jacobi_wrapper(char* filename,int N) {
     free(eigenvalues);
 }
 
-void spk_wrapper(char* filename,int N,int dim, int k) {
+void spk_wrapper(char *filename, int N, int dim, int k) {
     /*wrapper for goal == spk - gets data points from file and calculates wam according to given logic*/
     double **data_points, **W, **V, **D, **U;
     double *eigenvalues;
@@ -145,7 +139,6 @@ void spk_wrapper(char* filename,int N,int dim, int k) {
     D = ddg(W, N);
     lnorm(W, D, N);
     V = jacobi(W, N);
-
     eigenvalues = get_diag(W, N);
     eigen_items = calloc(N, sizeof(eigen));
     assert_eigen_arr(eigen_items);
@@ -156,7 +149,7 @@ void spk_wrapper(char* filename,int N,int dim, int k) {
         item.vector = eigenvector;
         eigen_items[i] = item;
     }
-    mergeSort(eigen_items,0,N-1); /*sorting the eigen_items according to eigen values - using mergeSort since it
+    mergeSort(eigen_items, 0, N - 1); /*sorting the eigen_items according to eigen values - using mergeSort since it
     is stable and O(nlogn) WC*/
     if (k == 0) {
         k = eigen_gap(eigen_items, N); /*if k == 0 then Eigengap Heuristic is used, as instructed*/
@@ -177,7 +170,6 @@ void spk_wrapper(char* filename,int N,int dim, int k) {
 }
 
 
-
 double norm(double *p1, double *p2, int dim) {
     /*calculates Euclidean distance between p1 and p2 - both points in R^dim*/
     int i;
@@ -196,7 +188,7 @@ double **wam(double **data_points, int N, int dim) {
     double **W;
 
     j = 0;
-    W = gen_mat(N,N);
+    W = gen_mat(N, N);
     for (i = 0; i < N; i++) {
         while (j < N) {
             if (i != j) {
@@ -217,7 +209,9 @@ void print_mat(double **mat, int N, int dim) {
         for (columns = 0; columns < dim; columns++) {
             print_double(mat[row][columns]);
             if (columns == dim - 1) {
-                printf("\n");
+                if (row < N - 1) {
+                    printf("\n");
+                }
             } else {
                 printf(",");
             }
@@ -229,9 +223,8 @@ void print_double(double num) {
     /*Prevents "-0.0000" situation*/
     if ((num < 0) && (num > -0.00005)) {
         printf("0.0000");
-    }
-    else {
-        printf("%.4f",num);
+    } else {
+        printf("%.4f", num);
     }
 }
 
@@ -251,7 +244,7 @@ double **ddg(double **wam_mat, int N) {
     int i, j;
     double **D;
 
-    D = gen_mat(N,N);
+    D = gen_mat(N, N);
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             if (i == j) {
@@ -350,7 +343,7 @@ void A_to_A_tag(double **A, double **V, int N) {
     t = sign(theta) / (fabs(theta) + sqrt((pow(theta, 2)) + 1));
     c = 1 / sqrt((pow(t, 2)) + 1);
     s = t * c;
-    V_multi_P(V,s,c,N,i,j); /*V = VP*/
+    V_multi_P(V, s, c, N, i, j); /*V = VP*/
 
     for (r = 0; r < N; r++) {
         if ((r != j) && (r != i)) {
@@ -515,8 +508,8 @@ double *get_ith_column(double **mat, int col_ind, int N) {
 
 
 /* Merge two subarrays L and M into arr */
-void merge(eigen * arr, int p, int q, int r) {
-    int i,j,k,n1,n2;
+void merge(eigen *arr, int p, int q, int r) {
+    int i, j, k, n1, n2;
     eigen *L, *M;
 
 
@@ -524,9 +517,9 @@ void merge(eigen * arr, int p, int q, int r) {
     n1 = q - p + 1;
     n2 = r - q;
 
-    L = calloc(n1,sizeof(eigen));
+    L = calloc(n1, sizeof(eigen));
     assert_eigen_arr(L);
-    M = calloc(n2,sizeof(eigen));
+    M = calloc(n2, sizeof(eigen));
     assert_eigen_arr(M);
 
     for (i = 0; i < n1; i++)
@@ -571,7 +564,7 @@ void merge(eigen * arr, int p, int q, int r) {
 }
 
 /* Divide the array into two subarrays, sort them and merge them */
-void mergeSort(eigen * arr, int l, int r) {
+void mergeSort(eigen *arr, int l, int r) {
     if (l < r) {
 
         /* m is the point where the array is divided into two subarrays */
@@ -718,7 +711,7 @@ void free_mat(double **mat) {
     free(mat);
 }
 
-void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
+void V_multi_P(double **V, double s, double c, int N, int i, int j) {
     /*V = VP; since P is almost-diagonal, no need to perform full matrix multiplication*/
     int r;
     double V_ri, V_rj;
@@ -732,7 +725,7 @@ void V_multi_P(double ** V, double s, double c, int N, int i, int j) {
     }
 }
 
-void assert_double_arr(const double * arr) {
+void assert_double_arr(const double *arr) {
     /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
@@ -740,7 +733,7 @@ void assert_double_arr(const double * arr) {
     }
 }
 
-void assert_int_arr(const int * arr) {
+void assert_int_arr(const int *arr) {
     /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
@@ -748,7 +741,7 @@ void assert_int_arr(const int * arr) {
     }
 }
 
-void assert_double_mat(double ** mat) {
+void assert_double_mat(double **mat) {
     /*Replaces assert*/
     if (mat == NULL) {
         printf("An Error Has Occured");
@@ -756,7 +749,7 @@ void assert_double_mat(double ** mat) {
     }
 }
 
-void assert_eigen_arr(eigen * arr) {
+void assert_eigen_arr(eigen *arr) {
     /*Replaces assert*/
     if (arr == NULL) {
         printf("An Error Has Occured");
@@ -764,7 +757,7 @@ void assert_eigen_arr(eigen * arr) {
     }
 }
 
-void assert_fp(FILE * fp) {
+void assert_fp(FILE *fp) {
     /*Replaces assert*/
     if (fp == NULL) {
         printf("An Error Has Occured");

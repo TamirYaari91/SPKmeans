@@ -67,7 +67,9 @@ void kmeans(double **T, int k, int N) {
         if ((i + 1) % k != 0) {
             printf(",");
         } else {
+            if (i < ((k * k) - 1)) {
                 printf("\n");
+            }
         }
     }
     free(centroids);
